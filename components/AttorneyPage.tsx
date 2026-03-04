@@ -63,7 +63,7 @@ export const AttorneyPage: React.FC = () => {
                 <p>고객의 기술을 스터디하고 IP 경험을 고객에 전달하는 즐거움을 좋아합니다.</p>
                 <p>+ 이광진 변리사는 현재 중견 특허법인에서 일하고 있습니다.</p>
               </div>
-              <a href="https://www.koreaip.com/main/main.html" className="block text-center bg-teal-500 text-white font-bold py-3 px-6 rounded-lg w-full hover:bg-teal-600 transition-colors">특허법인 소개 바로 가기</a>
+              <a href="https://www.koreaip.com/main/main.html" target="_blank" rel="noopener noreferrer" className="block text-center bg-teal-500 text-white font-bold py-3 px-6 rounded-lg w-full hover:bg-teal-600 transition-colors">특허법인 소개 바로 가기</a>
             </div>
           </div>
         </div>
