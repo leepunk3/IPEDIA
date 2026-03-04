@@ -1,0 +1,76 @@
+
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EXIT IP Strategy | IPEDIA</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;700;800;900&display=swap" rel="stylesheet">
+    <!-- Pretendard for high-quality Korean fallback that matches Montserrat's weights -->
+    <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
+    <style>
+        :root {
+            --midnight-blue: #162a63; /* Refined to match image background */
+            --brand-orange: #FF4E00;   /* Refined to match vibrant image orange */
+            --sand-bg: #f9f8f6;
+            --pure-white: #FFFFFF;
+            --text-dark: #162a63;
+            --text-muted: #4a5568;
+        }
+        body {
+            font-family: 'Montserrat', 'Pretendard', sans-serif;
+            background-color: var(--sand-bg);
+            color: var(--text-dark);
+            overflow-x: hidden;
+            -webkit-font-smoothing: antialiased;
+            font-weight: 500;
+        }
+        h1, h2, h3, h4, .font-heading {
+            font-family: 'Montserrat', 'Pretendard', sans-serif;
+            font-weight: 900; /* Matching the ultra-bold look in the image */
+            letter-spacing: -0.05em;
+            line-height: 1;
+        }
+        .btn-dsc {
+            background-color: var(--brand-orange);
+            color: white;
+            transition: all 0.2s ease-in-out;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            padding: 1.25rem 2.5rem;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Montserrat', 'Pretendard', sans-serif;
+        }
+        .btn-dsc:hover {
+            opacity: 0.9;
+            transform: scale(1.02);
+        }
+        .section-sand { background-color: var(--sand-bg); }
+        .section-midnight { background-color: var(--midnight-blue); color: var(--pure-white); }
+        .section-white { background-color: var(--pure-white); }
+        
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: var(--sand-bg); }
+        ::-webkit-scrollbar-thumb { background: var(--midnight-blue); }
+    </style>
+    <script type="importmap">
+    {
+      "imports": {
+        "react/": "https://esm.sh/react@^19.2.3/",
+        "react": "https://esm.sh/react@^19.2.3",
+        "react-dom/": "https://esm.sh/react-dom@^19.2.3/",
+        "@google/genai": "https://esm.sh/@google/genai@^1.38.0"
+      }
+    }
+    </script>
+</head>
+<body>
+    <div id="root"></div>
+</body>
+</html>
