@@ -164,16 +164,16 @@ const App: React.FC = () => {
               </div>
             </div>
 
-            {/* Step 2: Design */}
+            {/* Step 3: Design */}
             <div className="mb-12 md:mb-24">
               <div className="mb-8 md:mb-12 border-b-2 border-[#162a63] pb-4 inline-block">
-                <h3 className="text-lg md:text-2xl font-heading font-extrabold text-[#162a63] uppercase tracking-widest">02. 다음을 작업합니다</h3>
+                <h3 className="text-lg md:text-2xl font-heading font-extrabold text-[#162a63] uppercase tracking-widest">03. 다음을 체크합니다</h3>
               </div>
               <div className="grid md:grid-cols-3 gap-4">
                 {[
-                  {title: '제품/서비스와 특허의 1:1 매핑', desc: '비즈니스 아이템과 청구항을 매칭합니다.' },
-                  {title: '초기 특허와 최종 아이템의 매칭', desc: '최종 아이템에 매칭되도록 초기 특허를 업데이트합니다' },
-                  {title: 'IP Due Diligence 대응', desc: 'IP DD에서 가격이 깎이지 않는 포트폴리오를 구축합니다' }
+                  {title: '제품/서비스와 특허의 1:1 매핑', desc: '비즈니스 아이템과 청구항이 매칭되는지 체크' },
+                  {title: '초기 특허와 최종 아이템의 매칭', desc: '초기 특허가 최종 아이템에 매칭되는지 체크 후 업데이트' },
+                  {title: '요소기술의 특허 출원 상태', desc: '비즈니스 요소 기술들이 특허화되어 있는지 체크' }
                 ].map((item, i) => (
                   <div key={i} className="bg-gray-50 p-4 md:p-6 border-2 border-[#162a63]/20 h-full flex flex-col relative overflow-hidden rounded-xl">
                     <div className="absolute top-0 right-0 w-16 h-16 bg-[#FF4E00]/10 rounded-bl-full -mr-3 -mt-3"></div>
@@ -184,10 +184,10 @@ const App: React.FC = () => {
               </div>
             </div>
 
-            {/* Step 3: Results */}
+            {/* Step 4: Results */}
             <div>
               <div className="mb-8 md:mb-12 border-b-2 border-[#162a63] pb-4 inline-block">
-                <h3 className="text-lg md:text-2xl font-heading font-extrabold text-[#162a63] uppercase tracking-widest">03. 결과를 도출합니다</h3>
+                <h3 className="text-lg md:text-2xl font-heading font-extrabold text-[#162a63] uppercase tracking-widest">04. 결과물을 제공해드립니다</h3>
               </div>
               <div className="grid md:grid-cols-3 gap-4">
                 {[
