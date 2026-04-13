@@ -16,7 +16,7 @@ const App: React.FC = () => {
               <span className="text-[#FF4E00]">특허로 보호</span>하세요
             </h1>
             <div className="text-base md:text-xl lg:text-xl font-black text-white/90 break-keep leading-tight border-l-4 md:border-l-8 border-[#FF4E00] pl-4 md:pl-8 py-2 md:py-4 bg-white/5">
-              스타트업에게 특허가 필요한 현실적인 이유는<br/>특허가 회사 가치를 높여주기 때문입니다.
+              스타트업에게 특허가 필요한 현실적인 이유는<br/>특허로 회사 가치를 높일 수 있기 때문입니다.
             </div>
           </div>
         </div>
@@ -33,8 +33,8 @@ const App: React.FC = () => {
                 <span className="text-[#FF4E00]">EXIT 가능성이 올라갑니다</span>
               </h2>
               <p className="text-sm md:text-lg lg:text-xl text-[#162a63] break-keep leading-snug">
-                풍성한 특허 포트폴리오는 기업의 기술력을 증명하고,<br/>
-                인수자에게는 독점적 시장 지위를 보장하는 강력한 유인이 됩니다.
+                탄탄한 특허 포트폴리오는 기업의 기술력을 증명하고,<br/>
+                독점적인 시장 지위를 보장합니다.
               </p>
             </div>
 
@@ -114,8 +114,8 @@ const App: React.FC = () => {
                 핵심 기술이 정말 보호되고 있는지를 묻습니다.
               </p>
               <p className="font-bold text-lg md:text-2xl">
-                기업에게 필요한 것은 많은 특허가 아니라<br/>
-                <span className="text-[#FF4E00]">잘 설계된 특허입니다.</span>
+                기업에게 필요한 것은 특허 개수가 아니라<br/>
+                <span className="text-[#FF4E00]">잘 설계된 핵심 특허입니다.</span>
               </p>
             </div>
           </div>
@@ -127,8 +127,8 @@ const App: React.FC = () => {
         <div className="max-w-5xl mx-auto px-6 relative z-10">
           <div className="max-w-4xl text-center">
             <h2 className="text-xl md:text-3xl lg:text-4xl font-heading font-extrabold uppercase tracking-tighter leading-tight">
-              IP가 많으면 <span className="text-[#FF4E00]">EXIT 가능성</span>이 높아지지만 <br/>
-              고품질의 IP가 있어야<span className="text-[#FF4E00]"> 기업 가치</span>가 올라갑니다.
+              특허가 많으면 <span className="text-[#FF4E00]">EXIT 가능성</span>이 높아지지만 <br/>
+              고품질의 특허가 있어야 <span className="text-[#FF4E00]">회사 가치</span>가 올라갑니다.
             </h2>
           </div>
         </div>
@@ -140,7 +140,7 @@ const App: React.FC = () => {
         <div className="max-w-7xl mx-auto px-6">
           <div className="text-center mb-10 md:mb-16">
             <h2 className="text-2xl md:text-3xl lg:text-5xl font-heading font-extrabold text-[#162a63] break-keep uppercase mb-6">              
-              저희는 IP의 <span className="text-[#FF4E00]">경영적 쓰임</span>을 고민합니다.
+              저희는 특허의 <span className="text-[#FF4E00]">경제적 쓰임새</span>을 고민합니다.
             </h2>
           </div>
 
@@ -152,8 +152,8 @@ const App: React.FC = () => {
               </div>
               <div className="grid md:grid-cols-3 gap-4">
                 {[
-                  <>비즈니스의 핵심 기술을<br/>특허로 등록받아낼 수 있을까?</>,
-                  <>제품이나 서비스를 지키려면<br/>몇 개의 핵심 IP가 필요할까?</>,
+                  >사업의 핵심 기술을<br/>등록 받아낼 수 있을까?</>,
+                  <>제품이나 서비스를 지키려면<br/>몇 개의 핵심 특허가 필요할까?</>,
                   <>빠르게 등록받을 수 있는 방법이<br/>있는가?</>
                 ].map((q, i) => (
                   <div key={i} className="bg-gray-50 p-4 md:p-6 border-2 border-[#162a63]/20 h-full flex flex-col relative overflow-hidden rounded-xl">
@@ -171,9 +171,9 @@ const App: React.FC = () => {
               </div>
               <div className="grid md:grid-cols-3 gap-4">
                 {[
-                  {title: '제품/서비스와 특허의 1:1 매핑', desc: '비즈니스 아이템과 청구항을 직접 연결합니다.' },
-                  {title: '초창기 특허와 최종 아이템의 매칭', desc: '최종 아이템에 매칭되도록 초창기 특허 업데이트' },
-                  {title: 'IP Due Diligence 대응', desc: 'IP DD에서 가격이 깎이지 않는 포트폴리오 구축' }
+                  {title: '제품/서비스와 특허의 1:1 매핑', desc: '비즈니스 아이템과 청구항을 매칭합니다.' },
+                  {title: '초기 특허와 최종 아이템의 매칭', desc: '최종 아이템에 매칭되도록 초기 특허를 업데이트합니다' },
+                  {title: 'IP Due Diligence 대응', desc: 'IP DD에서 가격이 깎이지 않는 포트폴리오를 구축합니다' }
                 ].map((item, i) => (
                   <div key={i} className="bg-gray-50 p-4 md:p-6 border-2 border-[#162a63]/20 h-full flex flex-col relative overflow-hidden rounded-xl">
                     <div className="absolute top-0 right-0 w-16 h-16 bg-[#FF4E00]/10 rounded-bl-full -mr-3 -mt-3"></div>
