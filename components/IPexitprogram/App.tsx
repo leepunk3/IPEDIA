@@ -59,39 +59,14 @@ const App: React.FC = () => {
         </div>
       </section>
 
-{/* 00. 많은 기술 스타트업의 오해*/}
-<section className="bg-white py-12 md:py-16 border-b border-gray-100">
-  <div className="max-w-7xl mx-auto px-6 text-center">
-    <div className="inline-block text-left">
-      <h4 className="text-lg md:text-3xl font-heading font-bold text-[#162a63] mb-6 uppercase relative z-10 text-center">
-        많은 기술 스타트업의 오해
-      </h4>
-
-      <div className="space-y-4 relative z-10">
-        {[
-          "특허가 많으면 기업가치가 올라간다.",          
-          "특허가 많다는 것은 기술력이 높다는 뜻이다.",
-          "특허 등록만 되면 투자자는 안심한다.",
-          "특허가 많으면 EXIT 때 프리미엄이 붙는다."
-        ].map((item, i) => (
-          <div key={i} className="flex items-start gap-3">
-            <div className="mt-1.5 w-2 h-2 bg-[#FF4E00] shrink-0" />
-            <span className="text-[#162a63] text-base md:text-lg">{item}</span>
-          </div>
-        ))}
-      </div>
-    </div>
-  </div>
-</section>
-
       {/* Section 2: The Trap (Quantity vs Quality) */}
       <section className="bg-[#f9f8f6] py-12 md:py-16">
         <div className="max-w-7xl mx-auto px-6">
           <div className="grid md:grid-cols-2 gap-8 md:gap-12 items-center">
             <div>
               <h2 className="text-xl md:text-3xl lg:text-4xl font-heading font-bold text-[#162a63] mb-8 uppercase tracking-tighter leading-none">
-                특허가 많아도<br/>
-                <span className="text-[#FF4E00]">평가가격은 높아지지 않습니다</span>
+                그렇지만, 특허가 많아도<br/>
+                <span className="text-[#FF4E00]">평가 가격은 높아지지 않습니다</span>
               </h2>
               <p className="text-base md:text-xl text-[#162a63] break-keep leading-snug font-bold">
                 엑싯 실사에서는 특허의 품질,  <br/>
