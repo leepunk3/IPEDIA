@@ -83,10 +83,10 @@ const App: React.FC = () => {
                   <h4 className="text-base md:text-2xl font-heading text-[#162a63] mb-6 uppercase">엑싯 실사에서 묻는 질문</h4>
                   <div className="space-y-4">
                     {[
-                      "회사의 핵심 기술은 경쟁사의 모방으로부터 실질적으로 보호되고 있습니까?",
-                      "현재 매출을 만드는 제품과 핵심 기술은 직접적으로 연결되어 있습니까?",
-                      "경쟁사가 유사 기술을 개발하면 쉽게 우회하거나 대체할 수 있지 않습니까?",
-                      "기술 구조는 회사의 중장기 사업 로드맵과 일치하고 있습니까?"
+                      "회사의 핵심 기술은 경쟁사의 모방으로부터 보호되고 있습니까?",
+                      "매출을 만드는 제품과 핵심 기술은 서로 매칭되어 있습니까?",
+                      "경쟁사가 유사 기술을 개발해서 쉽게 대체할 수 있지 않습니까?",
+                      "기술 구조는 회사의 중장기 사업 로드맵과 일치합니까?"
                     ].map((item, i) => (
                       <div key={i} className="flex items-start gap-3">
                         <div className="mt-1.5 w-2 h-2 bg-[#FF4E00] shrink-0"></div>
@@ -106,7 +106,7 @@ const App: React.FC = () => {
         <div className="max-w-7xl mx-auto px-6">
           <div className="max-w-4xl mx-auto text-center">
             <h2 className="text-2xl md:text-3xl lg:text-4xl font-heading font-bold text-[#162a63] mb-8 uppercase tracking-tighter leading-none">
-              그래서 특허를 <span className="text-[#FF4E00]">잘 설계해야 합니다</span>
+              그래서 특허를 <span className="text-[#FF4E00]">잘 만들어야 합니다</span>
             </h2>
             <div className="space-y-6 text-base md:text-xl text-[#162a63] font-medium leading-relaxed break-keep">
               <p>
@@ -127,8 +127,8 @@ const App: React.FC = () => {
         <div className="max-w-5xl mx-auto px-6 relative z-10">
           <div className="max-w-4xl text-center">
             <h2 className="text-xl md:text-3xl lg:text-4xl font-heading font-extrabold uppercase tracking-tighter leading-tight">
-              풍성한 IP는 <span className="text-[#FF4E00]">EXIT 가능성</span>을 높이고 <br/>
-              고품질의 IP는<span className="text-[#FF4E00]"> 기업 가치</span>를 높입니다.
+              IP가 많으면 <span className="text-[#FF4E00]">EXIT 가능성</span>이 높아지지만 <br/>
+              고품질의 IP가 있어야<span className="text-[#FF4E00]"> 기업 가치</span>가 올라갑니다.
             </h2>
           </div>
         </div>
@@ -140,7 +140,7 @@ const App: React.FC = () => {
         <div className="max-w-7xl mx-auto px-6">
           <div className="text-center mb-10 md:mb-16">
             <h2 className="text-2xl md:text-3xl lg:text-5xl font-heading font-extrabold text-[#162a63] break-keep uppercase mb-6">              
-              저희는 특허의 <span className="text-[#FF4E00]">경영적 쓰임</span>을 고민합니다.
+              저희는 IP의 <span className="text-[#FF4E00]">경영적 쓰임</span>을 고민합니다.
             </h2>
           </div>
 
@@ -152,9 +152,9 @@ const App: React.FC = () => {
               </div>
               <div className="grid md:grid-cols-3 gap-4">
                 {[
-                  <>제품이나 서비스를 지키려면<br/>몇 개의 IP가 필요할까?</>,
-                  <>비즈니스의 핵심 기술이<br/>특허 등록될 수 있을까?</>,
-                  <>빠른 심사가 가능한 요건에<br/>해당하는가?</>
+                  <>비즈니스의 핵심 기술을<br/>특허로 등록받아낼 수 있을까?</>,
+                  <>제품이나 서비스를 지키려면<br/>몇 개의 핵심 IP가 필요할까?</>,
+                  <>빠르게 등록받을 수 있는 방법이<br/>있는가?</>
                 ].map((q, i) => (
                   <div key={i} className="bg-gray-50 p-4 md:p-6 border-2 border-[#162a63]/20 h-full flex flex-col relative overflow-hidden rounded-xl">
                     <div className="absolute top-0 right-0 w-16 h-16 bg-[#FF4E00]/10 rounded-bl-full -mr-3 -mt-3"></div>
