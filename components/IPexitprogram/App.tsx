@@ -163,7 +163,28 @@ const App: React.FC = () => {
                 ))}
               </div>
             </div>
+          
+            {/* Step 3: Tech Tree */}
+            <div className="mb-12 md:mb-24">
+              <div className="mb-8 md:mb-12 border-b-2 border-[#162a63] pb-4 inline-block">
+                <h3 className="text-lg md:text-2xl font-heading font-extrabold text-[#162a63] uppercase tracking-widest">02. 기술 트리를 조망하고 세부 요소 기술을 정의합니다</h3>
+              </div>
+              <div className="grid md:grid-cols-3 gap-4">
+                {[
+                  {title: '고객의 기술 분야에 대한 기술 분해도 시각화', desc: '기술 분야 → 상위 기술 영역 → 핵심 기술군의 계층도를 구성' },
+                  {title: '고객사에게 필요한 상위 기술 영역을 선정', desc: '고객사 회의를 통해 필수 기술 영역을 선정' },
+                  {title: '세부 요소기술 정의 후 특허 출원 논의', desc: '세부 요소 기술을 기반으로 중장기 R&D 로드맵과 특허 전략을 연계하여 설계' }
+                ].map((item, i) => (
+                  <div key={i} className="bg-gray-50 p-4 md:p-6 border-2 border-[#162a63]/20 h-full flex flex-col relative overflow-hidden rounded-xl">
+                    <div className="absolute top-0 right-0 w-16 h-16 bg-[#FF4E00]/10 rounded-bl-full -mr-3 -mt-3"></div>
+                    <h4 className="text-base md:text-lg font-bold text-[#162a63] mb-2 leading-tight relative z-10">{item.title}</h4>
+                    <p className="text-gray-600 font-medium text-xs md:text-sm leading-relaxed relative z-10">{item.desc}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
 
+          
             {/* Step 3: Design */}
             <div className="mb-12 md:mb-24">
               <div className="mb-8 md:mb-12 border-b-2 border-[#162a63] pb-4 inline-block">
