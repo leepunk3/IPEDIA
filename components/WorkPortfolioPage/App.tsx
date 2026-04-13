@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { Header } from '../Header';
 import { Footer } from '../Footer';
 import { motion, AnimatePresence } from 'motion/react';
-import Papa from 'papaparse';
+import Papa, { ParseResult } from 'papaparse';
 import { 
   Calendar, 
   User, 
@@ -41,7 +41,7 @@ export const WorkPortfolioPage: React.FC = () => {
       Papa.parse(GOOGLE_SHEET_URL, {
         download: true,
         header: true,
-        complete: (results) => {
+        complete: (results: ParseResult<Record<string, string>>) => {
           const data = results.data as any[];
           const newItems: PortfolioItem[] = data
             .filter(row => row.Title && row.Applicant) // Basic validation
@@ -58,7 +58,7 @@ export const WorkPortfolioPage: React.FC = () => {
             setPortfolioItems(newItems);
           }
         },
-        error: (error) => {
+        error: (error: Error) => {
           console.error('Error fetching Google Sheet data:', error);
         }
       });
