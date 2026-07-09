@@ -1,9 +1,16 @@
 import React from 'react';
-import { Shield, Target, Zap } from 'lucide-react';
+import { Shield, Target, Zap, BriefcaseBusiness } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 export const StrategyRisk: React.FC = () => {
   const features = [
+    {
+      icon: <BriefcaseBusiness className="w-8 h-8 text-[#FF5A00]" />,
+      image: "https://picsum.photos/seed/in_house_patent_attorney/800/600",
+      title: '사내 변리사 제공 서비스',
+      description: '변리사가 개발 회의에 참석합니다. 기업 기술에 더 가까운 곳에서 특허를 고민합니다.',
+      link: '/in-house-patent-attorney'
+    },
     {
       icon: <Target className="w-8 h-8 text-[#FF5A00]" />,
       image: "https://picsum.photos/seed/exit_strategy_typography/800/600",
@@ -35,25 +42,43 @@ export const StrategyRisk: React.FC = () => {
             We provide
           </h2>
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8">
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8">
           {features.map((feature, idx) => (
-            <Link to={feature.link} key={idx} className="block group">
-              <div className="bg-white rounded-2xl shadow-sm border border-gray-100 reveal overflow-hidden hover:shadow-md transition-shadow duration-300 h-full" style={{ transitionDelay: `${idx * 0.1}s` }}>
+            <Link
+              to={feature.link}
+              key={idx}
+              className="block group"
+            >
+              <div
+                className="bg-white rounded-2xl shadow-sm border border-gray-100 reveal overflow-hidden hover:shadow-md transition-shadow duration-300 h-full"
+                style={{
+                  transitionDelay: `${idx * 0.1}s`
+                }}
+              >
                 <div className="h-24 md:h-48 overflow-hidden relative">
-                  <img 
-                    src={feature.image} 
-                    alt={feature.title} 
+                  <img
+                    src={feature.image}
+                    alt={feature.title}
                     className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                     referrerPolicy="no-referrer"
                   />
+
                   <div className="absolute inset-0 bg-black/5 group-hover:bg-black/0 transition-colors duration-300" />
                 </div>
+
                 <div className="p-5 md:p-8">
                   <div className="mb-4 md:mb-6 inline-flex p-3 bg-orange-50 rounded-xl group-hover:bg-orange-100 transition-colors duration-300">
                     {feature.icon}
                   </div>
-                  <h3 className="text-lg md:text-xl font-bold text-[#1F2F6E] mb-3 md:mb-4 group-hover:text-[#FF5A00] transition-colors duration-300">{feature.title}</h3>
-                  <p className="text-gray-500 leading-relaxed text-sm md:text-base">{feature.description}</p>
+
+                  <h3 className="text-lg md:text-xl font-bold text-[#1F2F6E] mb-3 md:mb-4 group-hover:text-[#FF5A00] transition-colors duration-300">
+                    {feature.title}
+                  </h3>
+
+                  <p className="text-gray-500 leading-relaxed text-sm md:text-base">
+                    {feature.description}
+                  </p>
                 </div>
               </div>
             </Link>
