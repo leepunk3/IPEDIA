@@ -7,7 +7,7 @@ export const StrategyRisk: React.FC = () => {
     {
       icon: <BriefcaseBusiness className="w-8 h-8 text-[#FF5A00]" />,
       image: "https://picsum.photos/seed/in_house_patent_attorney/800/600",
-      title: '사내 변리사 제공 서비스',
+      title: '사내 변리사 제공 서비스(기업용)',
       description: '변리사가 개발 회의에 참석합니다. 기업 기술에 더 가까운 곳에서 특허를 고민합니다.',
       link: '/in-house-patent-attorney'
     },
