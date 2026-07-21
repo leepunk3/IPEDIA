@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { Header } from '../Header';
 import { Footer } from '../Footer';
 import { motion, AnimatePresence } from 'motion/react';
-import Papa, { ParseResult } from 'papaparse';
+import Papa from 'papaparse';
 import { 
   Calendar, 
   User, 
@@ -41,7 +41,7 @@ export const WorkPortfolioPage: React.FC = () => {
       Papa.parse(GOOGLE_SHEET_URL, {
         download: true,
         header: true,
-        complete: (results: ParseResult<Record<string, string>>) => {
+        complete: (results) => {
           const data = results.data as any[];
           const newItems: PortfolioItem[] = data
             .filter(row => row.Title && row.Applicant) // Basic validation
@@ -58,7 +58,7 @@ export const WorkPortfolioPage: React.FC = () => {
             setPortfolioItems(newItems);
           }
         },
-        error: (error: Error) => {
+        error: (error) => {
           console.error('Error fetching Google Sheet data:', error);
         }
       });
@@ -187,9 +187,9 @@ export const WorkPortfolioPage: React.FC = () => {
               <div className="absolute -bottom-24 -right-24 w-1/2 h-full bg-[#FF4E00]/10 skew-x-12 transform origin-bottom-right opacity-30 blur-3xl" />
             </section>
 
-            <section className="py-16 md:py-32">
+            <section className="py-12 md:py-20">
               <div className="max-w-7xl mx-auto px-4 md:px-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-10">
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-5">
                   {portfolioItems.map((item, idx) => (
                     <motion.div 
                       key={item.id} 
@@ -197,20 +197,20 @@ export const WorkPortfolioPage: React.FC = () => {
                       whileInView={{ opacity: 1, y: 0 }}
                       viewport={{ once: true }}
                       transition={{ delay: idx * 0.1 }}
-                      className="group bg-white rounded-[24px] md:rounded-[32px] shadow-sm hover:shadow-2xl border border-gray-100 flex flex-col overflow-hidden cursor-pointer relative h-[380px] md:h-[440px] transition-all duration-500" 
+                      className="group bg-white rounded-2xl shadow-sm hover:shadow-xl border border-gray-100 flex flex-col overflow-hidden cursor-pointer relative h-auto pb-4 transition-all duration-500" 
                       onClick={() => setViewingItem(item)}
                     >
-                      <div className="w-full h-56 md:h-64 bg-gray-50 flex items-center justify-center p-8 md:p-10 relative overflow-hidden">
+                      <div className="w-full h-36 md:h-40 bg-gray-50 flex items-center justify-center p-4 md:p-5 relative overflow-hidden">
                         <div className="absolute inset-0 bg-gradient-to-br from-orange-50/30 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-                        <img src="/image03.png" alt={item.title} className="max-w-full max-h-full object-contain drop-shadow-xl group-hover:scale-110 transition-transform duration-700 relative z-10" />
+                        <img src="/image03.png" alt={item.title} className="max-w-full max-h-full object-contain drop-shadow-lg group-hover:scale-105 transition-transform duration-700 relative z-10" />
                       </div>
                       
-                      <div className="p-6 md:p-8 flex flex-col flex-grow relative">
-                        <div className="mb-3 md:mb-4 flex items-center justify-between">
-                          <span className="text-[10px] font-black text-[#FF4E00] tracking-widest uppercase">{item.applicant}</span>
+                      <div className="p-4 flex flex-col flex-grow relative">
+                        <div className="mb-2 flex items-center justify-between">
+                          <span className="text-xs sm:text-sm font-black text-[#FF4E00] tracking-wider uppercase">{item.applicant}</span>
                           <span className="text-[10px] font-black text-gray-300">{item.registrationDate}</span>
                         </div>
-                        <h3 className="text-xl md:text-2xl font-black text-[#162a63] leading-tight whitespace-pre-wrap group-hover:text-[#FF4E00] transition-colors duration-300 mb-4 md:mb-6">
+                        <h3 className="text-sm md:text-base font-black text-[#162a63] leading-tight whitespace-pre-wrap group-hover:text-[#FF4E00] transition-colors duration-300 mb-2">
                           {item.title}
                         </h3>
                       </div>
