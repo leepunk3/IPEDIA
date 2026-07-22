@@ -9,6 +9,7 @@ import { IPexitprogramPage } from './components/IPexitprogram';
 import { TipsIpStrategyPage } from './components/TipsIpStrategyPage/App';
 import { AttorneyPage } from './components/AttorneyPage';
 import { WorkPortfolioPage } from './components/WorkPortfolioPage/App';
+import { AttorneyInchargePage } from './components/AttorneyIncharge';
 
 const App: React.FC = () => {
   return (
@@ -23,6 +24,7 @@ const App: React.FC = () => {
         <Route path="/tips-ip-strategy" element={<TipsIpStrategyPage />} />
         <Route path="/attorney" element={<AttorneyPage />} />
         <Route path="/work-portfolio" element={<WorkPortfolioPage />} />
+        <Route path="/in-house-patent-attorney" element={<AttorneyInchargePage />} />
       </Routes>
     </Router>
   );
