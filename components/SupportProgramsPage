@@ -175,7 +175,7 @@ export const SupportProgramsPage: React.FC = () => {
             <div className="flex items-center justify-between mb-1">
               <h1 className="text-xl md:text-2xl font-bold text-[#1F1F23] tracking-tight flex items-center gap-2">
                 <span>🗂️</span>
-                <span>지적재산 출원지원사업 아카이브</span>
+                <span>출원비용 지원사업</span>
               </h1>
               <button
                 type="button"
