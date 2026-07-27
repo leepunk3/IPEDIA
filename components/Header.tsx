@@ -73,6 +73,22 @@ export const Header: React.FC<HeaderProps> = ({ scrolled }) => {
         >
           업무포트폴리오
         </Link>
+        <Link 
+          to="/pricing"
+          className={`text-[9px] md:text-[14px] font-bold-heavy tracking-tighter transition-colors hover:text-[#FF5A00] whitespace-nowrap ${
+            scrolled ? 'text-[#1F2F6E]' : 'text-white'
+          }`}
+        >
+          IP 인사이트
+        </Link>
+        <Link 
+          to="/support"
+          className={`text-[9px] md:text-[14px] font-bold-heavy tracking-tighter transition-colors hover:text-[#FF5A00] whitespace-nowrap ${
+            scrolled ? 'text-[#1F2F6E]' : 'text-white'
+          }`}
+        >
+          지원사업
+        </Link>
         <button 
           onClick={() => handleScrollToSection('we-provide')}
           className={`text-[9px] md:text-[13px] font-bold-heavy px-1.5 py-1 md:px-6 md:py-3 rounded-sm transition-all shadow-lg block text-center whitespace-nowrap ${
