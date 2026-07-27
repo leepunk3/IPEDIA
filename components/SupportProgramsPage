@@ -1,0 +1,363 @@
+import React, { useState, useEffect, useMemo } from 'react';
+import { Header } from './Header';
+import { Footer } from './Footer';
+import { Search, Copy, Check, ExternalLink, RefreshCw, Calendar } from 'lucide-react';
+
+const SHEET_ID = "1q0XUQfZoQFQBrvVVtVJJKrUsWZVKpVy2JmnC8t1RqPQ";
+
+export interface SupportProgramItem {
+  link: string;
+  deadline: string;
+  keyword: string;
+  name: string;
+  region: string;
+  type: string;
+  brief: string;
+  detail: string;
+}
+
+function parseDeadline(s: string): Date | null {
+  if (!s) return null;
+  const m = String(s).match(/(\d{4})[.\-/](\d{1,2})[.\-/](\d{1,2})/);
+  if (!m) return null;
+  return new Date(parseInt(m[1], 10), parseInt(m[2], 10) - 1, parseInt(m[3], 10), 23, 59, 59);
+}
+
+function getDdayInfo(deadline: string) {
+  const d = parseDeadline(deadline);
+  if (!d) return { label: "", cls: "normal" };
+  const now = new Date();
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const target = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+  const diff = Math.round((target.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+
+  if (diff < 0) return { label: "마감", cls: "over" };
+  if (diff === 0) return { label: "오늘마감", cls: "urgent" };
+  if (diff <= 3) return { label: `D-${diff}`, cls: "urgent" };
+  if (diff <= 7) return { label: `D-${diff}`, cls: "soon" };
+  return { label: `D-${diff}`, cls: "normal" };
+}
+
+export const SupportProgramsPage: React.FC = () => {
+  const [items, setItems] = useState<SupportProgramItem[]>([]);
+  const [search, setSearch] = useState<string>('');
+  const [sortMode, setSortMode] = useState<'asc' | 'desc'>('asc');
+  const [openCardIndices, setOpenCardIndices] = useState<Record<number, boolean>>({});
+  const [copiedIndex, setCopiedIndex] = useState<number | null>(null);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [lastUpdated, setLastUpdated] = useState<string | null>(null);
+
+  // Fetch Google Sheets Data
+  const loadData = async () => {
+    setIsLoading(true);
+    try {
+      const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json`;
+      const res = await fetch(url);
+      if (!res.ok) throw new Error('Network response was not ok');
+      const text = await res.text();
+      const jsonStart = text.indexOf('{');
+      const jsonEnd = text.lastIndexOf('}');
+      if (jsonStart !== -1 && jsonEnd !== -1) {
+        const json = JSON.parse(text.substring(jsonStart, jsonEnd + 1));
+        const rows = json.table.rows || [];
+        const fetchedItems: SupportProgramItem[] = [];
+
+        for (const row of rows) {
+          const c = row.c || [];
+          const link = c[0]?.v ? String(c[0].v) : '';
+          const status = c[1]?.v ? String(c[1].v) : '';
+          const deadline = c[3]?.v ? String(c[3].v) : '';
+          const keyword = c[4]?.v ? String(c[4].v) : '';
+          const name = c[5]?.v ? String(c[5].v) : '';
+          const region = c[6]?.v ? String(c[6].v) : '';
+          const type = c[7]?.v ? String(c[7].v) : '';
+          const brief = c[8]?.v ? String(c[8].v) : '';
+          const detail = c[9]?.v ? String(c[9].v) : '';
+
+          if (String(status).trim() !== '완료') continue;
+
+          fetchedItems.push({ link, deadline, keyword, name, region, type, brief, detail });
+        }
+
+        if (fetchedItems.length > 0) {
+          setItems(fetchedItems);
+        }
+      }
+    } catch (err) {
+      console.warn('Google Sheets fetch notice, using fallback data:', err);
+    } finally {
+      setIsLoading(false);
+      setLastUpdated(new Date().toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' }));
+    }
+  };
+
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'auto' });
+    loadData();
+  }, []);
+
+  // Filter out expired items based on GAS logic (deadline >= now)
+  const activeItems = useMemo(() => {
+    const now = new Date();
+    // Reset to start of today for fair date comparisons
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+
+    return items.filter(it => {
+      const d = parseDeadline(it.deadline);
+      return !d || d >= today;
+    });
+  }, [items]);
+
+  // Filter by search term
+  const filteredItems = useMemo(() => {
+    const q = search.trim().toLowerCase();
+    if (!q) return activeItems;
+
+    return activeItems.filter(it => {
+      const searchTarget = `${it.name} ${it.region} ${it.keyword} ${it.type} ${it.brief}`.toLowerCase();
+      return searchTarget.includes(q);
+    });
+  }, [activeItems, search]);
+
+  // Sort by deadline
+  const sortedItems = useMemo(() => {
+    const copy = [...filteredItems];
+    copy.sort((a, b) => {
+      const da = parseDeadline(a.deadline);
+      const db = parseDeadline(b.deadline);
+      if (!da && !db) return 0;
+      if (!da) return 1;
+      if (!db) return -1;
+      return sortMode === 'desc' ? db.getTime() - da.getTime() : da.getTime() - db.getTime();
+    });
+    return copy;
+  }, [filteredItems, sortMode]);
+
+  const toggleCard = (idx: number) => {
+    setOpenCardIndices(prev => ({
+      ...prev,
+      [idx]: !prev[idx]
+    }));
+  };
+
+  const handleCopy = (e: React.MouseEvent, briefText: string, idx: number) => {
+    e.stopPropagation();
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(briefText).then(() => {
+        setCopiedIndex(idx);
+        setTimeout(() => setCopiedIndex(null), 1500);
+      });
+    } else {
+      // Fallback copy
+      const textArea = document.createElement('textarea');
+      textArea.value = briefText;
+      document.body.appendChild(textArea);
+      textArea.select();
+      try {
+        document.execCommand('copy');
+        setCopiedIndex(idx);
+        setTimeout(() => setCopiedIndex(null), 1500);
+      } catch (err) {
+        console.error('Copy failed:', err);
+      }
+      document.body.removeChild(textArea);
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-[#F7F7F8] flex flex-col text-[#1F1F23] font-sans antialiased">
+      <Header scrolled={true} />
+
+      <main className="flex-1 pt-24 md:pt-32 pb-16">
+        <div className="max-w-[720px] mx-auto px-4 sm:px-6">
+          {/* Header Title */}
+          <div className="mb-6">
+            <div className="flex items-center justify-between mb-1">
+              <h1 className="text-xl md:text-2xl font-bold text-[#1F1F23] tracking-tight flex items-center gap-2">
+                <span>🗂️</span>
+                <span>지적재산 출원지원사업 아카이브</span>
+              </h1>
+              <button
+                type="button"
+                onClick={loadData}
+                disabled={isLoading}
+                className="p-1.5 text-slate-400 hover:text-[#162a63] transition-colors rounded-lg hover:bg-slate-200/60 cursor-pointer"
+                title="새로고침"
+              >
+                <RefreshCw className={`w-4 h-4 ${isLoading ? 'animate-spin' : ''}`} />
+              </button>
+            </div>
+            <div className="text-xs md:text-sm text-[#6B6B73] flex items-center justify-between">
+              <span>지적재산 출원지원사업 공고 모음 · 총 {sortedItems.length}건</span>
+              {lastUpdated && <span className="text-[11px] text-slate-400">업데이트: {lastUpdated}</span>}
+            </div>
+          </div>
+
+          {/* Search Input */}
+          <div className="relative mb-4">
+            <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+            <input
+              id="q"
+              type="text"
+              value={search}
+              onChange={e => setSearch(e.target.value)}
+              placeholder="사업명, 지역, 키워드로 검색"
+              className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-300 bg-white text-sm text-[#1F1F23] placeholder:text-slate-400 focus:outline-hidden focus:border-[#1F1F23] focus:ring-1 focus:ring-[#1F1F23] transition-all shadow-2xs"
+            />
+          </div>
+
+          {/* Sort Toggle Buttons */}
+          <div className="flex items-center gap-2 mb-6">
+            <button
+              type="button"
+              onClick={() => setSortMode('asc')}
+              className={`text-xs px-3 py-1.5 rounded-full font-medium border transition-all cursor-pointer ${
+                sortMode === 'asc'
+                  ? 'bg-[#1F1F23] text-white border-[#1F1F23] shadow-2xs'
+                  : 'bg-[#EEF0F3] text-[#4A4A52] border-slate-300 hover:bg-slate-200'
+              }`}
+            >
+              ⏳ 마감임박순
+            </button>
+            <button
+              type="button"
+              onClick={() => setSortMode('desc')}
+              className={`text-xs px-3 py-1.5 rounded-full font-medium border transition-all cursor-pointer ${
+                sortMode === 'desc'
+                  ? 'bg-[#1F1F23] text-white border-[#1F1F23] shadow-2xs'
+                  : 'bg-[#EEF0F3] text-[#4A4A52] border-slate-300 hover:bg-slate-200'
+              }`}
+            >
+              🌱 여유순
+            </button>
+          </div>
+
+          {/* Card List */}
+          {sortedItems.length === 0 ? (
+            <div className="bg-white rounded-2xl p-12 text-center border border-slate-200 shadow-2xs text-[#9A9AA0] text-sm">
+              등록된 지원사업 공고가 없거나 검색 결과가 없습니다.
+            </div>
+          ) : (
+            <div id="list" className="space-y-5">
+              {sortedItems.map((it, idx) => {
+                const dd = getDdayInfo(it.deadline);
+                const isOpen = !!openCardIndices[idx];
+
+                // Badge styling logic matching GAS CSS
+                let ddayBadgeCls = 'bg-[#EEF0F3] text-[#4A4A52]';
+                if (dd.cls === 'urgent') ddayBadgeCls = 'bg-red-50 text-red-600 font-semibold border border-red-100';
+                if (dd.cls === 'soon') ddayBadgeCls = 'bg-amber-50 text-amber-700 font-semibold border border-amber-100';
+                if (dd.cls === 'over') ddayBadgeCls = 'bg-slate-100 text-slate-400';
+
+                return (
+                  <div
+                    key={`${it.name}-${idx}`}
+                    onClick={() => toggleCard(idx)}
+                    className={`bg-white border-2 rounded-2xl p-4 sm:p-5 transition-all cursor-pointer shadow-2xs ${
+                      isOpen
+                        ? 'border-[#1F1F23] shadow-md'
+                        : 'border-[#D5D5DA] hover:border-slate-400'
+                    } ${dd.cls === 'over' ? 'opacity-60 bg-slate-50' : ''}`}
+                  >
+                    {/* Badges */}
+                    <div className="flex flex-wrap items-center gap-1.5 mb-2.5">
+                      {it.keyword && (
+                        <span className="text-[11px] px-2 py-0.5 rounded-full bg-[#EEF2FF] text-[#4338CA] font-semibold border border-indigo-100">
+                          {it.keyword}
+                        </span>
+                      )}
+                      {it.region && (
+                        <span className="text-[11px] px-2 py-0.5 rounded-full bg-[#E8F0FE] text-[#1A56DB] font-medium border border-blue-100">
+                          {it.region}
+                        </span>
+                      )}
+                      {dd.label && (
+                        <span className={`text-[11px] px-2 py-0.5 rounded-full ${ddayBadgeCls}`}>
+                          {dd.label}
+                        </span>
+                      )}
+                    </div>
+
+                    {/* Title */}
+                    <h3 className="text-base font-semibold text-[#1F1F23] leading-snug mb-2">
+                      {it.name}
+                    </h3>
+
+                    {/* Brief */}
+                    <div className="text-xs sm:text-sm text-[#45454D] leading-relaxed whitespace-pre-wrap mb-3">
+                      {it.brief}
+                    </div>
+
+                    {/* Copy Button */}
+                    <div className="mb-2">
+                      <button
+                        type="button"
+                        onClick={e => handleCopy(e, it.brief, idx)}
+                        className={`text-xs px-3 py-1.5 rounded-lg border font-medium inline-flex items-center gap-1.5 transition-all cursor-pointer ${
+                          copiedIndex === idx
+                            ? 'bg-[#E6F4EA] text-[#1E7A34] border-[#BFE3C9]'
+                            : 'bg-[#EEF0F3] text-[#1F1F23] border-slate-300 hover:bg-slate-200'
+                        }`}
+                      >
+                        {copiedIndex === idx ? (
+                          <>
+                            <Check className="w-3.5 h-3.5" />
+                            <span>✅ 복사됨</span>
+                          </>
+                        ) : (
+                          <>
+                            <Copy className="w-3.5 h-3.5" />
+                            <span>📋 채팅용 복사</span>
+                          </>
+                        )}
+                      </button>
+                    </div>
+
+                    {/* Deadline Meta */}
+                    {it.deadline && (
+                      <div className="text-[12px] text-[#9A9AA0] mt-2 flex items-center gap-1">
+                        <Calendar className="w-3.5 h-3.5" />
+                        <span>마감 {it.deadline}</span>
+                      </div>
+                    )}
+
+                    {/* Expandable Detail Section */}
+                    {isOpen && (
+                      <div className="mt-4 pt-4 border-t border-slate-200/80 space-y-3 bg-[#F3F3F5] -mx-4 -mb-4 sm:-mx-5 sm:-mb-5 p-4 sm:p-5 rounded-b-xl border-t border-[#E6E6EA]">
+                        {it.detail && (
+                          <div className="text-xs sm:text-sm text-[#2C2C33] leading-relaxed whitespace-pre-wrap">
+                            {it.detail}
+                          </div>
+                        )}
+                        <div className="pt-2 flex items-center justify-between">
+                          {it.link ? (
+                            <a
+                              href={it.link}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              onClick={e => e.stopPropagation()}
+                              className="inline-flex items-center gap-1.5 text-xs font-semibold bg-[#1F1F23] hover:bg-slate-800 text-white px-3.5 py-2 rounded-lg transition-colors"
+                            >
+                              <span>원문 공고 보기</span>
+                              <ExternalLink className="w-3.5 h-3.5" />
+                            </a>
+                          ) : <div />}
+
+                          <span className="text-[11px] text-slate-400">클릭 시 접기</span>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      </main>
+
+      <Footer />
+    </div>
+  );
+};
+
+export default SupportProgramsPage;
