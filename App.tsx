@@ -10,7 +10,7 @@ import { TipsIpStrategyPage } from './components/TipsIpStrategyPage/App';
 import { AttorneyPage } from './components/AttorneyPage';
 import { WorkPortfolioPage } from './components/WorkPortfolioPage/App';
 import { AttorneyInchargePage } from './components/AttorneyIncharge';
-import { PricingPage } from './components/PricingPage';
+import { InsightPage } from './components/InsightPage';
 import { SupportProgramsPage } from './components/SupportProgramsPage';
 
 const App: React.FC = () => {
@@ -24,7 +24,9 @@ const App: React.FC = () => {
         <Route path="/ip-extension-program" element={<IpExtensionProgramPage />} />
         <Route path="/ip-exit-program" element={<IPexitprogramPage />} />
         <Route path="/tips-ip-strategy" element={<TipsIpStrategyPage />} />
-        <Route path="/pricing" element={<PricingPage />} />
+        <Route path="/insight" element={<InsightPage />} />
+        <Route path="/Insight" element={<InsightPage />} />
+        <Route path="/pricing" element={<InsightPage />} />
         <Route path="/support" element={<SupportProgramsPage />} />
         <Route path="/attorney" element={<AttorneyPage />} />
         <Route path="/work-portfolio" element={<WorkPortfolioPage />} />
