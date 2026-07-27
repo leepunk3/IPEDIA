@@ -74,7 +74,7 @@ export const Header: React.FC<HeaderProps> = ({ scrolled }) => {
           업무포트폴리오
         </Link>
         <Link 
-          to="/pricing"
+          to="/insight"
           className={`text-[9px] md:text-[14px] font-bold-heavy tracking-tighter transition-colors hover:text-[#FF5A00] whitespace-nowrap ${
             scrolled ? 'text-[#1F2F6E]' : 'text-white'
           }`}
