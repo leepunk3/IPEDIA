@@ -55,7 +55,7 @@ export const Header: React.FC<HeaderProps> = ({ scrolled }) => {
             scrolled ? 'text-[#1F2F6E]' : 'text-white'
           }`}
         >
-          변리사 소개
+          변리사
         </Link>
         <a 
           href="/activities"
@@ -63,7 +63,7 @@ export const Header: React.FC<HeaderProps> = ({ scrolled }) => {
             scrolled ? 'text-[#1F2F6E]' : 'text-white'
           }`}
         >
-          WE DO
+          주요업무
         </a>
         <Link 
           to="/work-portfolio"
@@ -71,7 +71,7 @@ export const Header: React.FC<HeaderProps> = ({ scrolled }) => {
             scrolled ? 'text-[#1F2F6E]' : 'text-white'
           }`}
         >
-          업무포트폴리오
+          등록성과
         </Link>
         <Link 
           to="/insight"
@@ -79,7 +79,7 @@ export const Header: React.FC<HeaderProps> = ({ scrolled }) => {
             scrolled ? 'text-[#1F2F6E]' : 'text-white'
           }`}
         >
-          IP 인사이트
+          인사이트
         </Link>
         <Link 
           to="/support"
