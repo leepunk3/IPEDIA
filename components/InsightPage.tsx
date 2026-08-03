@@ -222,17 +222,46 @@ export const InsightPage: React.FC = () => {
     setGdocErrorMap(prev => ({ ...prev, [postId]: '' }));
 
     try {
+      // 1. Try standard /api/gdoc/content
       const res = await fetch('/api/gdoc/content', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ docUrl }),
       });
-      const data = await res.json();
-      if (data.success && data.markdown) {
-        setGdocMarkdownMap(prev => ({ ...prev, [postId]: data.markdown }));
-      } else if (data.error) {
-        setGdocErrorMap(prev => ({ ...prev, [postId]: data.error }));
+
+      if (res.ok) {
+        const data = await res.json();
+        if (data.success && data.markdown) {
+          setGdocMarkdownMap(prev => ({ ...prev, [postId]: data.markdown }));
+          return;
+        } else if (data.error) {
+          setGdocErrorMap(prev => ({ ...prev, [postId]: data.error }));
+          return;
+        }
       }
+
+      // 2. Try Netlify function direct path fallback
+      const netlifyRes = await fetch('/.netlify/functions/api/gdoc/content', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ docUrl }),
+      });
+
+      if (netlifyRes.ok) {
+        const netlifyData = await netlifyRes.json();
+        if (netlifyData.success && netlifyData.markdown) {
+          setGdocMarkdownMap(prev => ({ ...prev, [postId]: netlifyData.markdown }));
+          return;
+        } else if (netlifyData.error) {
+          setGdocErrorMap(prev => ({ ...prev, [postId]: netlifyData.error }));
+          return;
+        }
+      }
+
+      setGdocErrorMap(prev => ({
+        ...prev,
+        [postId]: '구글 문서를 불러올 수 없습니다. 구글 문서 공유 설정을 "링크가 있는 모든 사용자에게 공개"로 해주시기 바랍니다.'
+      }));
     } catch (err) {
       console.warn('Error fetching Google Doc content:', err);
       setGdocErrorMap(prev => ({
