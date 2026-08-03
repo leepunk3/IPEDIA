@@ -2,366 +2,538 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { Header } from './Header';
 import { Footer } from './Footer';
-import { ArrowLeft, FileText, Home, ChevronRight, ChevronDown } from 'lucide-react';
+import { ArrowLeft, ChevronRight, RefreshCw, X } from 'lucide-react';
+import { motion } from 'motion/react';
+import Markdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
+import rehypeRaw from 'rehype-raw';
 
-interface Post {
+export interface Post {
   id: string;
+  no: string;
   title: string;
   date: string;
   category: string;
   summary: string;
+  author: string;
   content: string[];
-  imageUrl?: string;
+  rawText?: string;
+  docUrl?: string;
+  status?: string;
+  thumbnail?: string | null;
+  images?: string[];
 }
 
-const POSTS: Post[] = [
-  {
-    id: 'p1',
-    title: '특허 출원, 아이디어만 있어도 시작할 수 있을까요',
-    date: '2026. 6. 2.',
-    category: '특허',
-    summary: '많은 분들이 시제품이 완성돼야 출원할 수 있다고 오해합니다. 실제로는 그렇지 않습니다.',
-    imageUrl: 'https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&w=800&q=80',
-    content: [
-      '상담을 하다 보면 "아직 시제품도 안 만들었는데 출원이 가능한가요"라는 질문을 자주 받습니다. 결론부터 말씀드리면, 특허 출원은 아이디어가 구체적인 기술적 사상으로 정리되어 있으면 충분히 가능합니다. 실물 제품이나 시제품의 존재 여부는 출원 요건이 아닙니다.',
-      '중요한 것은 그 아이디어가 "어떻게 구현되는지"를 명세서에 논리적으로 설명할 수 있는가입니다. 구조, 원리, 작동 방식이 명확하게 서술될 수 있다면 시제품 없이도 출원서 작성이 가능합니다.',
-      '다만 청구범위를 너무 넓게 잡으면 심사 과정에서 거절이유가 나올 가능성이 높아지고, 너무 좁게 잡으면 권리 범위가 협소해져 실효성이 떨어집니다. 이 균형을 잡는 것이 변리사의 역할이라고 생각합니다.',
-      '아이디어 단계에서 상담을 먼저 받아보시는 것을 권해드립니다. 출원 시점을 앞당길수록 선출원주의 원칙상 유리한 위치를 선점할 수 있습니다.'
-    ]
-  },
-  {
-    id: 'p2',
-    title: '상표 출원 전에 반드시 확인해야 할 것',
-    date: '2026. 5. 18.',
-    category: '상표',
-    summary: '브랜드를 정하고 바로 출원하기 전, 선행상표 조사가 왜 필수인지 설명합니다.',
-    imageUrl: 'https://images.unsplash.com/photo-1542744094-3a3121691a79?auto=format&fit=crop&w=800&q=80',
-    content: [
-      '상표는 브랜드 이름을 정한 뒤 가장 먼저 출원해야 한다고 생각하기 쉽지만, 그 전에 반드시 거쳐야 할 단계가 있습니다. 바로 선행상표 조사입니다.',
-      '이미 등록되어 있거나 출원 중인 유사 상표가 있다면, 아무리 브랜드가 마음에 들어도 등록이 거절될 가능성이 높습니다. 조사를 생략하고 출원부터 진행하면, 관납료와 시간을 들이고도 결과를 얻지 못하는 경우가 발생합니다.',
-      '조사 단계에서는 동일·유사 명칭뿐 아니라 지정상품 분류(류)까지 함께 검토합니다. 같은 이름이라도 지정상품이 다르면 등록이 가능한 경우도 있고, 반대로 이름이 조금 달라도 유사 판단을 받는 경우도 있기 때문입니다.',
-      '브랜드를 정하는 단계에서부터 변리사와 함께 후보군을 조사해보시는 것이 시간과 비용을 아끼는 가장 확실한 방법입니다.'
-    ]
-  },
-  {
-    id: 'p3',
-    title: '디자인권과 특허, 둘 다 필요한 경우',
-    date: '2026. 4. 27.',
-    category: '디자인',
-    summary: '외관과 기능을 동시에 보호해야 하는 제품이라면 두 가지 권리를 함께 고려해야 합니다.',
-    imageUrl: 'https://images.unsplash.com/photo-1581291518857-4e27b48ff24e?auto=format&fit=crop&w=800&q=80',
-    content: [
-      '제품을 개발하다 보면 "이건 디자인권으로 보호해야 하나, 특허로 보호해야 하나"라는 질문을 종종 받습니다. 답은 대부분 "둘 다"입니다.',
-      '특허는 기술적 사상, 즉 기능과 작동 원리를 보호합니다. 반면 디자인권은 물품의 외관, 형상과 모양을 보호합니다. 같은 제품이라도 보호하는 대상이 다르기 때문에 하나만 등록해서는 완전한 보호가 되지 않는 경우가 많습니다.',
-      '예를 들어 새로운 구조의 용기를 개발했다면, 그 구조의 작동 원리는 특허로, 독특한 외관 디자인은 디자인권으로 각각 출원하는 것이 일반적입니다. 경쟁사가 기능은 다르게 구현하면서 외관만 베끼는 경우를 막으려면 디자인권이 필요하고, 외관은 다르게 하면서 핵심 기술만 가져가는 경우를 막으려면 특허가 필요합니다.',
-      '두 권리를 함께 검토하면 비용이 늘어난다고 생각하실 수 있지만, 실제로는 침해 대응 범위를 넓히는 효율적인 투자에 가깝습니다.'
-    ]
-  },
-  {
-    id: 'p4',
-    title: '거절이유통지서를 받았다고 낙담하지 마세요',
-    date: '2026. 3. 11.',
-    category: '특허',
-    summary: '거절이유통지는 심사의 정상적인 한 단계입니다. 대응 전략이 결과를 좌우합니다.',
-    imageUrl: 'https://images.unsplash.com/photo-1450133064473-71024230f91b?auto=format&fit=crop&w=800&q=80',
-    content: [
-      '출원 후 거절이유통지서를 받으면 많은 분들이 "떨어진 건가요"라고 걱정하며 연락을 주십니다. 하지만 거절이유통지는 최종 거절이 아니라, 심사관이 등록 전 검토 의견을 제시하는 절차입니다.',
-      '실제로 상당수의 특허가 한 차례 이상의 거절이유통지를 거친 뒤 등록됩니다. 중요한 것은 통지 내용을 정확히 분석하고, 의견서와 보정서를 통해 청구범위를 적절히 조정하는 대응 전략입니다.',
-      '거절이유는 크게 신규성 부족, 진보성 부족, 기재불비 등으로 나뉘는데, 각각 대응 방식이 다릅니다. 예를 들어 진보성 문제라면 선행기술과의 차이를 명확히 부각하는 의견서가 핵심이고, 기재불비라면 명세서 표현을 정교하게 다듬는 보정이 우선입니다.',
-      '통지서를 받으셨다면 우선 지정된 대응기한부터 확인하시고, 가능한 빨리 변리사와 상담해 대응 방향을 정하시는 것을 권해드립니다.'
-    ]
-  },
-  {
-    id: 'p5',
-    title: '상표 등록 후에도 관리가 필요한 이유',
-    date: '2026. 2. 20.',
-    category: '상표',
-    summary: '등록만으로 끝나지 않습니다. 존속기간과 사용 여부 관리가 권리 유지의 핵심입니다.',
-    imageUrl: 'https://images.unsplash.com/photo-1507238691740-187a5b1d37b8?auto=format&fit=crop&w=800&q=80',
-    content: [
-      '상표는 등록되었다고 해서 영구히 유지되는 권리가 아닙니다. 10년의 존속기간이 있고, 갱신을 하지 않으면 권리가 소멸됩니다.',
-      '또한 등록 후 3년 이상 정당한 이유 없이 사용하지 않으면 제3자가 불사용취소심판을 청구할 수 있습니다. 이 경우 실제 사용 증거를 제출하지 못하면 등록이 취소될 수 있습니다.',
-      '따라서 등록 이후에도 사용 증거(포장, 광고, 거래명세서 등)를 꾸준히 보관하고, 갱신 시기를 놓치지 않도록 관리하는 것이 중요합니다.'
-    ]
-  },
-  {
-    id: 'p6',
-    title: '디자인 출원 시 도면이 등록 가능성을 좌우합니다',
-    date: '2026. 1. 30.',
-    category: '디자인',
-    summary: '같은 제품이라도 도면 표현 방식에 따라 심사 결과가 달라질 수 있습니다.',
-    imageUrl: 'https://images.unsplash.com/photo-1513542789411-b6a5d4f31634?auto=format&fit=crop&w=800&q=80',
-    content: [
-      '디자인 출원에서 명세서보다 더 중요한 것이 도면입니다. 심사관은 도면에 표현된 형상과 모양을 기준으로 신규성과 창작성을 판단합니다.',
-      '도면이 불명확하거나 여러 각도를 충분히 표현하지 못하면, 실제로는 창작성이 있는 디자인이라도 심사 단계에서 불리하게 작용할 수 있습니다.',
-      '정면도, 배면도, 좌우측면도, 평면도, 저면도를 비롯해 필요한 경우 사용상태도까지 꼼꼼히 준비하는 것이 등록 가능성을 높이는 실질적인 방법입니다.'
-    ]
-  }
-];
-
-const CATEGORY_ORDER = ['특허', '상표', '디자인'];
-
-type ViewState =
-  | { mode: 'home' }
-  | { mode: 'category'; category: string };
+// 기본 설정된 구글 시트 ID
+const DEFAULT_SHEET_ID = "1fp4ozWNdS2VjY8Mkq5fKCBl7T-DtGHXdCoTmoFDc5Dg";
 
 export const InsightPage: React.FC = () => {
-  const [view, setView] = useState<ViewState>({ mode: 'home' });
+  const [sheetId] = useState<string>(() => {
+    return localStorage.getItem('INSIGHT_SHEET_ID') || DEFAULT_SHEET_ID;
+  });
+
+  const [posts, setPosts] = useState<Post[]>([]);
+  const [selectedCategory, setSelectedCategory] = useState<string>('전체');
   const [selectedPostId, setSelectedPostId] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [isLoadingContent, setIsLoadingContent] = useState<boolean>(false);
+  const [gdocMarkdownMap, setGdocMarkdownMap] = useState<Record<string, string>>({});
+  const [lastUpdated, setLastUpdated] = useState<string | null>(null);
+
+  // 구글 시트 데이터 연동
+  const fetchSheetData = async (targetSheetId: string) => {
+    if (!targetSheetId.trim()) {
+      setPosts([]);
+      setIsLoading(false);
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      const url = `https://docs.google.com/spreadsheets/d/${targetSheetId.trim()}/gviz/tq?tqx=out:json`;
+      const res = await fetch(url);
+      if (!res.ok) throw new Error('구글 시트 응답 오류');
+
+      const text = await res.text();
+      const jsonStart = text.indexOf('{');
+      const jsonEnd = text.lastIndexOf('}');
+      if (jsonStart !== -1 && jsonEnd !== -1) {
+        const json = JSON.parse(text.substring(jsonStart, jsonEnd + 1));
+        const rows = json.table.rows || [];
+        const fetchedPosts: Post[] = [];
+
+        const getCellVal = (cell: any): string => {
+          if (!cell) return '';
+          if (cell.f != null && String(cell.f).trim() !== '') return String(cell.f).trim();
+          if (cell.v != null) {
+            const raw = String(cell.v).trim();
+            if (raw.startsWith('Date(')) {
+              const match = raw.match(/Date\((\d+),\s*(\d+),\s*(\d+)\)/);
+              if (match) {
+                return `${match[1]}. ${Number(match[2]) + 1}. ${match[3]}`;
+              }
+            }
+            return raw;
+          }
+          return '';
+        };
+
+        const extractUrlFromCell = (cell: any): string => {
+          if (!cell) return '';
+          const f = cell.f ? String(cell.f) : '';
+          const v = cell.v ? String(cell.v) : '';
+          const combined = `${f} ${v}`;
+
+          const match = combined.match(/https?:\/\/[^\s"'<>\(\)]+/);
+          if (match) {
+            let url = match[0];
+            url = url.replace(/["'\)\>\,\.]*$/, '');
+            return url;
+          }
+          return '';
+        };
+
+        const colMap = { no: -1, title: -1, date: -1, category: -1, summary: -1, author: -1, content: -1, docUrl: -1, status: -1 };
+        let headerRowIndex = -1;
+
+        for (let r = 0; r < Math.min(rows.length, 5); r++) {
+          const cells = rows[r]?.c || [];
+          let foundCount = 0;
+          for (let c = 0; c < cells.length; c++) {
+            const txt = getCellVal(cells[c]).toLowerCase();
+            if (!txt) continue;
+
+            if (colMap.no === -1 && (txt.includes('번호') || txt === 'no' || txt.includes('순번'))) { colMap.no = c; foundCount++; }
+            else if (colMap.title === -1 && (txt.includes('제목') || txt.includes('title'))) { colMap.title = c; headerRowIndex = r; foundCount++; }
+            else if (colMap.date === -1 && (txt.includes('작성일') || txt.includes('날짜') || txt.includes('date'))) { colMap.date = c; foundCount++; }
+            else if (colMap.category === -1 && (txt.includes('카테고리') || txt.includes('분류') || txt.includes('category'))) { colMap.category = c; foundCount++; }
+            else if (colMap.summary === -1 && (txt.includes('요약') || txt.includes('summary'))) { colMap.summary = c; foundCount++; }
+            else if (colMap.author === -1 && (txt.includes('작성자') || txt.includes('author'))) { colMap.author = c; foundCount++; }
+            else if (colMap.docUrl === -1 && (txt.includes('구글문서') || txt.includes('문서') || txt.includes('doc') || txt.includes('링크') || txt.includes('url') || txt.includes('g열'))) { colMap.docUrl = c; foundCount++; }
+            else if (colMap.content === -1 && (txt.includes('본문') || txt.includes('내용') || txt.includes('content'))) { colMap.content = c; foundCount++; }
+            else if (colMap.status === -1 && (txt.includes('상태') || txt.includes('status'))) { colMap.status = c; foundCount++; }
+          }
+          if (headerRowIndex !== -1 || foundCount >= 2) {
+            if (headerRowIndex === -1) headerRowIndex = r;
+            break;
+          }
+        }
+
+        let startOffset = 0;
+        if (rows.length > 0) {
+          const sampleCells = rows[headerRowIndex >= 0 ? headerRowIndex + 1 : 0]?.c || [];
+          if (!getCellVal(sampleCells[0]) && getCellVal(sampleCells[2])) startOffset = 2;
+        }
+
+        if (colMap.no === -1) colMap.no = startOffset + 0;
+        if (colMap.title === -1) colMap.title = startOffset + 1;
+        if (colMap.date === -1) colMap.date = startOffset + 2;
+        if (colMap.category === -1) colMap.category = startOffset + 3;
+        if (colMap.summary === -1) colMap.summary = startOffset + 4;
+        if (colMap.author === -1) colMap.author = startOffset + 5;
+        if (colMap.content === -1) colMap.content = startOffset + 6;
+        if (colMap.status === -1) colMap.status = startOffset + 7;
+
+        rows.forEach((row: any, idx: number) => {
+          if (headerRowIndex !== -1 && idx <= headerRowIndex) return;
+          const c = row.c || [];
+
+          const title = getCellVal(c[colMap.title]);
+          const noVal = getCellVal(c[colMap.no]);
+          const date = getCellVal(c[colMap.date]);
+          const category = getCellVal(c[colMap.category]) || '일반';
+          const summary = getCellVal(c[colMap.summary]);
+          const author = getCellVal(c[colMap.author]) || '아이피디아';
+          const rawContent = getCellVal(c[colMap.content]);
+          const status = getCellVal(c[colMap.status]) || '게시';
+
+          if (!title || title === '제목' || title === 'Title' || status === '비공개' || status === '숨김' || status === 'N') return;
+
+          const no = noVal ? (noVal.toUpperCase().startsWith('NO') ? noVal : `NO. ${noVal}`) : `NO. ${rows.length - idx}`;
+          let docUrl = '';
+          
+          if (colMap.docUrl !== -1 && c[colMap.docUrl]) {
+            docUrl = extractUrlFromCell(c[colMap.docUrl]);
+          }
+          if (!docUrl && c[startOffset + 6]) {
+            docUrl = extractUrlFromCell(c[startOffset + 6]);
+          }
+          if (!docUrl && c[6]) {
+            docUrl = extractUrlFromCell(c[6]);
+          }
+          if (!docUrl && c[colMap.content]) {
+            docUrl = extractUrlFromCell(c[colMap.content]);
+          }
+          if (!docUrl) {
+            for (let cellIdx = 0; cellIdx < c.length; cellIdx++) {
+              const foundUrl = extractUrlFromCell(c[cellIdx]);
+              if (foundUrl) {
+                docUrl = foundUrl;
+                break;
+              }
+            }
+          }
+
+          const content = rawContent && !docUrl
+            ? rawContent.split('\n').map(p => p.trim()).filter(Boolean)
+            : (summary ? [summary] : [title]);
+
+          fetchedPosts.push({
+            id: `sheet-${idx}`,
+            no,
+            title,
+            date: date || new Date().toLocaleDateString('ko-KR'),
+            category,
+            summary: summary || (content[0] ? content[0].substring(0, 100) : title),
+            author,
+            content,
+            rawText: rawContent,
+            docUrl,
+            status
+          });
+        });
+
+        if (fetchedPosts.length > 0) {
+          setPosts(fetchedPosts);
+          setLastUpdated(new Date().toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' }));
+        } else {
+          setPosts([]);
+        }
+      }
+    } catch (err) {
+      console.warn('Google Sheets fetch notice:', err);
+      setPosts([]);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // 초기 로드 시 구글 시트 데이터 로드
+  useEffect(() => {
+    fetchSheetData(sheetId);
+  }, [sheetId]);
+
+  // Google Doc Content 로드
+  const fetchGDocContent = async (postId: string, docUrl: string) => {
+    if (gdocMarkdownMap[postId]) return;
+
+    setIsLoadingContent(true);
+    try {
+      const res = await fetch('/api/gdoc/content', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ docUrl }),
+      });
+      const data = await res.json();
+      if (data.success && data.markdown) {
+        setGdocMarkdownMap(prev => ({ ...prev, [postId]: data.markdown }));
+      }
+    } catch (err) {
+      console.warn('Error fetching Google Doc content:', err);
+    } finally {
+      setIsLoadingContent(false);
+    }
+  };
+
+  const handleOpenPost = (id: string) => {
+    setSelectedPostId(id);
+    const target = posts.find(p => p.id === id);
+    if (target?.docUrl && (target.docUrl.includes('docs.google.com') || target.docUrl.startsWith('http')) && !gdocMarkdownMap[id]) {
+      fetchGDocContent(id, target.docUrl);
+    }
+  };
+
+  const handleCloseDetail = () => setSelectedPostId(null);
 
   const selectedPost = useMemo(
-    () => POSTS.find(p => p.id === selectedPostId) ?? null,
-    [selectedPostId]
+    () => posts.find(p => p.id === selectedPostId) ?? null,
+    [posts, selectedPostId]
   );
 
   const categories = useMemo(() => {
-    const present = Array.from(new Set(POSTS.map(p => p.category)));
-    return CATEGORY_ORDER.filter(c => present.includes(c)).concat(
-      present.filter(c => !CATEGORY_ORDER.includes(c))
-    );
-  }, []);
+    const set = new Set(posts.map(p => p.category));
+    return ['전체', ...Array.from(set)];
+  }, [posts]);
+
+  const filteredPosts = useMemo(() => {
+    if (selectedCategory === '전체') return posts;
+    return posts.filter(p => p.category === selectedCategory);
+  }, [posts, selectedCategory]);
 
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: 'auto' });
-  }, [view, selectedPostId]);
-
-  const handleOpenPost = (id: string) => setSelectedPostId(id);
-  const handleCloseDetail = () => setSelectedPostId(null);
-  const handleOpenCategory = (category: string) => {
-    setSelectedPostId(null);
-    if (category === '전체') {
-      setView({ mode: 'home' });
-    } else {
-      setView({ mode: 'category', category });
-    }
-  };
-  const handleBackToHome = () => {
-    setSelectedPostId(null);
-    setView({ mode: 'home' });
-  };
-
-  const renderCard = (post: Post) => (
-    <button
-      key={post.id}
-      type="button"
-      onClick={() => handleOpenPost(post.id)}
-      className="text-left flex flex-col h-full group cursor-pointer"
-    >
-      <div className="rounded-lg overflow-hidden mb-4 aspect-[16/10] bg-slate-100 relative">
-        {post.imageUrl ? (
-          <img
-            src={post.imageUrl}
-            alt={post.title}
-            className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-[1.03]"
-            referrerPolicy="no-referrer"
-          />
-        ) : (
-          <div className="w-full h-full bg-[#162a63] flex items-center justify-center transition-transform duration-200 group-hover:scale-[1.02]">
-            <FileText className="w-9 h-9 text-white/90" strokeWidth={1.25} />
-          </div>
-        )}
-      </div>
-      <div className="flex flex-col flex-1">
-        <h3 className="text-base font-bold text-[#162a63] leading-snug mb-1 line-clamp-2 group-hover:text-[#2847D0] transition-colors">
-          {post.title}
-        </h3>
-        <p className="text-xs text-slate-500 line-clamp-2 mt-1 leading-relaxed">
-          {post.summary}
-        </p>
-        <div className="flex-1" />
-        <div className="text-xs text-slate-400 font-medium mt-4 pt-2 border-t border-slate-100 flex items-center justify-between">
-          <span className="font-bold text-[#2847D0] bg-[#EDF0FC] px-2 py-0.5 rounded text-[10px]">
-            {post.category}
-          </span>
-          <span>{post.date}</span>
-        </div>
-      </div>
-    </button>
-  );
-
-  const heroTitle = selectedPost ? null : view.mode === 'category' ? view.category : 'IP 인사이트';
+  }, [selectedPostId, selectedCategory]);
 
   return (
-    <div className="min-h-screen bg-white flex flex-col text-[#162a63] font-sans antialiased">
+    <div className="relative min-h-screen bg-[#FDFDFD] selection:bg-[#FF5A00] selection:text-white">
       <Header scrolled={true} />
 
-      <main className="flex-1">
-        {/* ── 네이비 히어로 밴드 ── */}
-        <div className="w-full bg-[#162a63] pt-28 pb-14 md:pt-36 md:pb-20 px-4 text-center">
-          {selectedPost ? (
-            <>
-              <span className="inline-block text-[11px] font-bold text-white/70 tracking-widest uppercase mb-3">
-                {selectedPost.category}
-              </span>
-              <h1 className="text-white font-bold text-2xl md:text-4xl tracking-tight leading-snug max-w-3xl mx-auto">
-                {selectedPost.title}
-              </h1>
-              <div className="mt-4 text-sm font-bold text-white">IP 인사이트</div>
-              <div className="text-xs text-white/50 mt-1">{selectedPost.date}</div>
-            </>
-          ) : (
-            <h1 className="text-white font-bold text-3xl md:text-4xl tracking-tight">{heroTitle}</h1>
+      <main className="pt-24 md:pt-40 pb-20 md:pb-32">
+        {/* Top Header Section */}
+        <div className="max-w-7xl mx-auto px-4 md:px-12">
+          {!selectedPost && (
+            <div className="text-center mb-12 md:mb-16 relative">
+              <motion.h2 
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: 0.1 }}
+                className="text-3xl md:text-6xl font-black text-[#1F2F6E] mb-6 md:mb-8 tracking-tighter leading-tight"
+              >
+                IPEDIA <span className="text-[#FF5A00]">INSIGHT</span>
+              </motion.h2>
+
+              {/* Category Filter Pills */}
+              <div className="flex items-center justify-center gap-2 overflow-x-auto pt-2 pb-2 no-scrollbar max-w-full">
+                {categories.map(cat => {
+                  const isActive = selectedCategory === cat;
+                  return (
+                    <button
+                      key={cat}
+                      type="button"
+                      onClick={() => setSelectedCategory(cat)}
+                      className={`px-5 py-2 rounded-full text-xs md:text-sm font-bold transition-all whitespace-nowrap cursor-pointer ${
+                        isActive
+                          ? 'bg-[#FF5A00] text-white shadow-md'
+                          : 'bg-slate-100 text-slate-600 hover:text-slate-900 hover:bg-slate-200 border border-slate-200/80'
+                      }`}
+                    >
+                      {cat}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
           )}
         </div>
 
-        {/* ── 브레드크럼 바 ── */}
-        <div className="w-full border-b border-slate-200 bg-white">
-          <div className="max-w-5xl mx-auto px-4 sm:px-6 py-3 flex items-center gap-2 text-xs text-slate-500 font-medium">
-            <Link to="/" className="flex items-center hover:text-[#2847D0] transition-colors">
-              <Home className="w-3.5 h-3.5" />
-            </Link>
-            <ChevronRight className="w-3 h-3 text-slate-300" />
-            <button
-              type="button"
-              onClick={handleBackToHome}
-              className={`flex items-center gap-1 ${view.mode === 'home' && !selectedPost ? 'text-[#162a63] font-bold' : 'hover:text-[#2847D0]'}`}
-            >
-              IP 인사이트
-              {view.mode === 'home' && !selectedPost && <ChevronDown className="w-3 h-3" />}
-            </button>
-            {view.mode === 'category' && (
-              <>
-                <ChevronRight className="w-3 h-3 text-slate-300" />
-                <button
-                  type="button"
-                  onClick={() => handleOpenCategory(view.category)}
-                  className={!selectedPost ? 'text-[#162a63] font-bold' : 'hover:text-[#2847D0]'}
-                >
-                  {view.category}
-                </button>
-              </>
-            )}
-            {selectedPost && (
-              <>
-                <ChevronRight className="w-3 h-3 text-slate-300" />
-                <span className="text-[#162a63] font-bold truncate max-w-[240px]">{selectedPost.title}</span>
-              </>
-            )}
-          </div>
-        </div>
-
-        <div className="max-w-5xl mx-auto px-4 sm:px-6 py-10 md:py-16">
-          {/* ── 카테고리 필터 탭 ── */}
-          {!selectedPost && (
-            <div className="flex items-center gap-2 overflow-x-auto pb-4 mb-10 border-b border-slate-100 no-scrollbar">
+        {/* Content Section */}
+        <div className="max-w-6xl mx-auto px-4 sm:px-6">
+          {selectedPost ? (
+            /* Detailed Post View */
+            <div className="bg-white text-slate-900 border border-slate-200 rounded-2xl p-6 md:p-10 max-w-4xl mx-auto shadow-xl relative">
               <button
                 type="button"
-                onClick={() => handleOpenCategory('전체')}
-                className={`px-4 py-2 rounded-full text-xs md:text-sm font-bold transition-all whitespace-nowrap cursor-pointer ${
-                  view.mode === 'home'
-                    ? 'bg-[#162a63] text-white shadow-xs'
-                    : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
-                }`}
+                onClick={handleCloseDetail}
+                className="absolute top-6 right-6 p-2 rounded-full bg-slate-100 text-slate-600 hover:text-slate-900 hover:bg-slate-200 transition-colors cursor-pointer"
+                title="닫기"
               >
-                전체보기
+                <X className="w-5 h-5" />
               </button>
-              {CATEGORY_ORDER.map(cat => {
-                const isActive = view.mode === 'category' && view.category === cat;
-                return (
-                  <button
-                    key={cat}
-                    type="button"
-                    onClick={() => handleOpenCategory(cat)}
-                    className={`px-4 py-2 rounded-full text-xs md:text-sm font-bold transition-all whitespace-nowrap cursor-pointer ${
-                      isActive
-                        ? 'bg-[#162a63] text-white shadow-xs'
-                        : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
-                    }`}
-                  >
-                    {cat}
-                  </button>
-                );
-              })}
-            </div>
-          )}
 
-          {/* ── 홈 모드: 카테고리별 섹션 ── */}
-          {!selectedPost && view.mode === 'home' && (
-            <div className="space-y-16 animate-fade-in">
-              {categories.map(category => {
-                const items = POSTS.filter(p => p.category === category).slice(0, 3);
-                if (items.length === 0) return null;
+              <div className="flex items-center justify-between mb-4 pr-10">
+                <span className="text-[#FF5A00] font-bold text-sm tracking-wider">{selectedPost.no}</span>
+                <span className="text-slate-500 text-xs font-medium">{selectedPost.date}</span>
+              </div>
 
-                return (
-                  <section key={category}>
-                    <div className="flex items-center justify-between mb-6 border-b border-slate-100 pb-4">
-                      <h2 className="text-xl md:text-2xl font-bold text-[#162a63] tracking-tight">
-                        {category}
-                      </h2>
-                      <button
-                        type="button"
-                        onClick={() => handleOpenCategory(category)}
-                        className="inline-flex items-center gap-1.5 text-xs md:text-sm font-bold text-[#2847D0] hover:text-[#162a63] transition-colors cursor-pointer"
-                      >
-                        전체보기 ({POSTS.filter(p => p.category === category).length})
-                        <ChevronRight className="w-3.5 h-3.5" />
-                      </button>
-                    </div>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-                      {items.map(renderCard)}
-                    </div>
-                  </section>
-                );
-              })}
-            </div>
-          )}
+              <h2 className="text-xl md:text-3xl font-bold text-slate-900 leading-snug tracking-tight mb-4">
+                {selectedPost.title}
+              </h2>
 
-          {/* ── 카테고리 전체 목록 모드 ── */}
-          {!selectedPost && view.mode === 'category' && (
-            <div className="animate-fade-in">
-              <div className="flex items-center justify-between mb-8">
-                <button
-                  type="button"
-                  onClick={handleBackToHome}
-                  className="inline-flex items-center gap-1.5 text-xs md:text-sm font-bold text-slate-500 hover:text-[#2847D0] transition-colors cursor-pointer"
-                >
-                  <ArrowLeft className="w-3.5 h-3.5" />
-                  전체 카테고리로 돌아가기
-                </button>
-                <span className="text-xs font-bold text-[#2847D0] bg-[#EDF0FC] px-3 py-1 rounded-full">
-                  총 {POSTS.filter(p => p.category === view.category).length}개의 글
+              <div className="text-xs text-slate-500 mb-8 pb-4 border-b border-slate-200 flex items-center justify-between">
+                <span>작성: {selectedPost.author}</span>
+                <span className="text-[#FF5A00] bg-[#FF5A00]/10 px-2.5 py-0.5 rounded-full font-semibold">
+                  {selectedPost.category}
                 </span>
               </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-                {POSTS.filter(p => p.category === view.category).map(renderCard)}
-              </div>
-            </div>
-          )}
 
-          {/* ── 상세 모드 ── */}
-          {selectedPost && (
-            <div key="detail" className="animate-fade-in">
-              <div className="max-w-2xl mx-auto">
-                {selectedPost.imageUrl && (
-                  <div className="mb-8 rounded-2xl overflow-hidden aspect-[16/9] shadow-md border border-slate-100">
+              {/* Content area: Clean Native Article View */}
+              <div className="space-y-6 text-sm md:text-base text-slate-800 leading-relaxed min-h-[150px]">
+                {/* Image Gallery / Thumbnail if present */}
+                {selectedPost.thumbnail && (
+                  <div className="rounded-xl overflow-hidden border border-slate-200 max-h-[380px] w-full bg-slate-50 mb-6">
                     <img
-                      src={selectedPost.imageUrl}
+                      src={selectedPost.thumbnail}
                       alt={selectedPost.title}
                       className="w-full h-full object-cover"
-                      referrerPolicy="no-referrer"
+                      onError={e => (e.currentTarget.style.display = 'none')}
                     />
                   </div>
                 )}
 
-                <div className="space-y-5">
-                  {selectedPost.content.map((paragraph, idx) => (
-                    <p key={idx} className="text-sm md:text-[15px] text-slate-700 leading-[1.9]">
-                      {paragraph}
-                    </p>
-                  ))}
-                </div>
+                {/* Google Doc Dynamic Markdown Content */}
+                {selectedPost.docUrl && gdocMarkdownMap[selectedPost.id] ? (
+                  <div className="prose max-w-none text-slate-900 space-y-4 leading-relaxed">
+                    <Markdown
+                      remarkPlugins={[remarkGfm]}
+                      rehypePlugins={[rehypeRaw]}
+                      components={{
+                        table: ({ node, ...props }) => (
+                          <div className="overflow-x-auto my-6 rounded-lg border border-slate-200 bg-white shadow-sm">
+                            <table className="w-full text-left text-sm text-slate-800 border-collapse" {...props} />
+                          </div>
+                        ),
+                        thead: ({ node, ...props }) => <thead className="bg-slate-100 text-slate-900 font-semibold text-xs uppercase border-b border-slate-200" {...props} />,
+                        th: ({ node, ...props }) => <th className="px-4 py-3 font-semibold text-[#FF5A00] border-r border-slate-200 last:border-r-0" {...props} />,
+                        td: ({ node, ...props }) => <td className="px-4 py-3 border-b border-slate-200 border-r border-slate-200 last:border-r-0 text-slate-800" {...props} />,
+                        tr: ({ node, ...props }) => <tr className="hover:bg-slate-50 transition-colors" {...props} />,
+                        strong: ({ node, ...props }) => <strong className="font-bold text-slate-900" {...props} />,
+                        b: ({ node, ...props }) => <strong className="font-bold text-slate-900" {...props} />,
+                        em: ({ node, ...props }) => <em className="italic text-slate-800" {...props} />,
+                        i: ({ node, ...props }) => <em className="italic text-slate-800" {...props} />,
+                        u: ({ node, ...props }) => <u className="underline text-slate-900 decoration-[#FF5A00]/80 decoration-2 underline-offset-2" {...props} />,
+                        del: ({ node, ...props }) => <del className="line-through text-slate-400" {...props} />,
+                        p: ({ node, ...props }) => <p className="mb-3 leading-relaxed text-slate-800" {...props} />,
+                        span: ({ node, ...props }) => <span {...props} />,
+                        blockquote: ({ node, ...props }) => (
+                          <blockquote className="border-l-4 border-[#FF5A00] pl-4 py-2 my-4 bg-[#FF5A00]/5 rounded-r-lg italic text-slate-700 font-medium" {...props} />
+                        ),
+                        img: ({ node, ...props }) => (
+                          <img className="rounded-xl border border-slate-200 shadow-md my-4 max-h-[450px] w-auto mx-auto object-contain" {...props} />
+                        ),
+                        a: ({ node, ...props }) => (
+                          <a className="text-[#FF5A00] underline hover:text-[#D44800] transition-colors font-medium" target="_blank" rel="noopener noreferrer" {...props} />
+                        ),
+                        h1: ({ node, ...props }) => <h1 className="text-xl md:text-2xl font-bold text-slate-900 mt-6 mb-3 border-b border-slate-200 pb-2" {...props} />,
+                        h2: ({ node, ...props }) => <h2 className="text-lg md:text-xl font-bold text-slate-900 mt-5 mb-2" {...props} />,
+                        h3: ({ node, ...props }) => <h3 className="text-base md:text-lg font-semibold text-slate-900 mt-4 mb-2" {...props} />,
+                        ul: ({ node, ...props }) => <ul className="list-disc list-inside space-y-1 my-3 text-slate-800" {...props} />,
+                        ol: ({ node, ...props }) => <ol className="list-decimal list-inside space-y-1 my-3 text-slate-800" {...props} />,
+                      }}
+                    >
+                      {gdocMarkdownMap[selectedPost.id]}
+                    </Markdown>
+                  </div>
+                ) : isLoadingContent ? (
+                  <div className="text-center py-12 text-slate-500">
+                    <RefreshCw className="w-6 h-6 animate-spin mx-auto mb-2 text-[#FF5A00]" />
+                    <p className="text-xs">상세 콘텐츠를 불러오는 중입니다...</p>
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    {selectedPost.content && selectedPost.content.length > 0 ? (
+                      selectedPost.content.map((paragraph, idx) => (
+                        <div key={idx} className="text-slate-800 leading-relaxed text-sm md:text-base font-normal">
+                          <Markdown
+                            remarkPlugins={[remarkGfm]}
+                            rehypePlugins={[rehypeRaw]}
+                            components={{
+                              table: ({ node, ...props }) => (
+                                <div className="overflow-x-auto my-6 rounded-lg border border-slate-200 bg-white shadow-sm">
+                                  <table className="w-full text-left text-sm text-slate-800 border-collapse" {...props} />
+                                </div>
+                              ),
+                              thead: ({ node, ...props }) => <thead className="bg-slate-100 text-slate-900 font-semibold text-xs uppercase border-b border-slate-200" {...props} />,
+                              th: ({ node, ...props }) => <th className="px-4 py-3 font-semibold text-[#FF5A00] border-r border-slate-200 last:border-r-0" {...props} />,
+                              td: ({ node, ...props }) => <td className="px-4 py-3 border-b border-slate-200 border-r border-slate-200 last:border-r-0 text-slate-800" {...props} />,
+                              tr: ({ node, ...props }) => <tr className="hover:bg-slate-50 transition-colors" {...props} />,
+                              strong: ({ node, ...props }) => <strong className="font-bold text-slate-900" {...props} />,
+                              b: ({ node, ...props }) => <strong className="font-bold text-slate-900" {...props} />,
+                              em: ({ node, ...props }) => <em className="italic text-slate-800" {...props} />,
+                              i: ({ node, ...props }) => <em className="italic text-slate-800" {...props} />,
+                              u: ({ node, ...props }) => <u className="underline text-slate-900 decoration-[#FF5A00]/80 decoration-2 underline-offset-2" {...props} />,
+                              del: ({ node, ...props }) => <del className="line-through text-slate-400" {...props} />,
+                              p: ({ node, ...props }) => <p className="mb-3 leading-relaxed text-slate-800" {...props} />,
+                              span: ({ node, ...props }) => <span {...props} />,
+                              blockquote: ({ node, ...props }) => (
+                                <blockquote className="border-l-4 border-[#FF5A00] pl-4 py-2 my-4 bg-[#FF5A00]/5 rounded-r-lg italic text-slate-700 font-medium" {...props} />
+                              ),
+                              img: ({ node, ...props }) => (
+                                <img className="rounded-xl border border-slate-200 shadow-md my-4 max-h-[450px] w-auto mx-auto object-contain" {...props} />
+                              ),
+                              a: ({ node, ...props }) => (
+                                <a className="text-[#FF5A00] underline hover:text-[#D44800] transition-colors font-medium" target="_blank" rel="noopener noreferrer" {...props} />
+                              ),
+                              h1: ({ node, ...props }) => <h1 className="text-xl md:text-2xl font-bold text-slate-900 mt-6 mb-3 border-b border-slate-200 pb-2" {...props} />,
+                              h2: ({ node, ...props }) => <h2 className="text-lg md:text-xl font-bold text-slate-900 mt-5 mb-2" {...props} />,
+                              h3: ({ node, ...props }) => <h3 className="text-base md:text-lg font-semibold text-slate-900 mt-4 mb-2" {...props} />,
+                              ul: ({ node, ...props }) => <ul className="list-disc list-inside space-y-1 my-3 text-slate-800" {...props} />,
+                              ol: ({ node, ...props }) => <ol className="list-decimal list-inside space-y-1 my-3 text-slate-800" {...props} />,
+                            }}
+                          >
+                            {paragraph}
+                          </Markdown>
+                        </div>
+                      ))
+                    ) : (
+                      <p className="text-slate-600">{selectedPost.summary}</p>
+                    )}
+                  </div>
+                )}
 
-                <div className="pt-8 mt-10 border-t border-slate-200">
-                  <button
-                    type="button"
-                    onClick={handleCloseDetail}
-                    className="inline-flex items-center gap-1.5 text-xs md:text-sm font-bold text-[#162a63] hover:text-[#2847D0] transition-colors cursor-pointer"
-                  >
-                    <ArrowLeft className="w-3.5 h-3.5" />
-                    목록으로 돌아가기
-                  </button>
-                </div>
+                {/* Article Images (if available) */}
+                {selectedPost.images && selectedPost.images.length > 1 && (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-4">
+                    {selectedPost.images.slice(1, 5).map((imgUrl, idx) => (
+                      <div key={idx} className="rounded-lg overflow-hidden border border-slate-200 bg-slate-50 h-48">
+                        <img
+                          src={imgUrl}
+                          alt={`첨부 이미지 ${idx + 1}`}
+                          className="w-full h-full object-cover"
+                          onError={e => (e.currentTarget.style.display = 'none')}
+                        />
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
+
+              <div className="mt-10 pt-6 border-t border-slate-200 flex items-center justify-between">
+                <button
+                  type="button"
+                  onClick={handleCloseDetail}
+                  className="inline-flex items-center gap-2 text-xs md:text-sm font-semibold text-slate-600 hover:text-[#FF5A00] transition-colors cursor-pointer"
+                >
+                  <ArrowLeft className="w-4 h-4" />
+                  목록으로 돌아가기
+                </button>
+              </div>
+            </div>
+          ) : (
+            /* Card Grid with White background */
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {filteredPosts.map(post => (
+                <div
+                  key={post.id}
+                  onClick={() => handleOpenPost(post.id)}
+                  className="relative bg-white text-slate-900 border border-slate-200/90 rounded-2xl p-6 flex flex-col justify-between hover:border-[#FF5A00] hover:shadow-xl hover:-translate-y-0.5 transition-all cursor-pointer group shadow-sm text-left min-h-[260px] overflow-hidden"
+                >
+                  {/* Left Accent Bar */}
+                  <div className="absolute left-0 top-6 bottom-6 w-[3.5px] bg-[#FF5A00] rounded-r-full z-10" />
+
+                  {/* Thumbnail Image if available */}
+                  {post.thumbnail && (
+                    <div className="w-full h-36 rounded-xl overflow-hidden mb-4 bg-slate-100 border border-slate-200">
+                      <img
+                        src={post.thumbnail}
+                        alt={post.title}
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                        onError={e => (e.currentTarget.style.display = 'none')}
+                      />
+                    </div>
+                  )}
+
+                  <div className="pl-1">
+                    {/* Top Row: Issue No + Date */}
+                    <div className="flex items-center justify-between mb-3">
+                      <span className="text-[#FF5A00] font-bold text-xs tracking-wider">
+                        {post.no}
+                      </span>
+                      <span className="text-slate-500 text-xs font-medium">
+                        {post.date}
+                      </span>
+                    </div>
+
+                    {/* Title */}
+                    <h3 className="text-slate-900 text-lg font-bold leading-snug tracking-tight mb-3 group-hover:text-[#FF5A00] transition-colors line-clamp-2">
+                      {post.title}
+                    </h3>
+
+                    {/* Summary */}
+                    <p className="text-slate-600 text-xs md:text-sm leading-relaxed line-clamp-3 mb-6">
+                      {post.summary}
+                    </p>
+                  </div>
+
+                  {/* Card Bottom Meta */}
+                  <div className="pl-1 pt-3 border-t border-slate-100 flex items-center justify-between text-xs text-slate-500">
+                    <span className="font-medium text-slate-600">{post.category}</span>
+                    <span className="text-[#FF5A00] font-medium group-hover:translate-x-1 transition-transform flex items-center gap-0.5">
+                      자세히 보기 <ChevronRight className="w-3.5 h-3.5" />
+                    </span>
+                  </div>
+                </div>
+              ))}
             </div>
           )}
         </div>
