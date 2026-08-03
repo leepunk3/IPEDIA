@@ -27,6 +27,33 @@ export interface Post {
 // 기본 설정된 구글 시트 ID
 const DEFAULT_SHEET_ID = "1fp4ozWNdS2VjY8Mkq5fKCBl7T-DtGHXdCoTmoFDc5Dg";
 
+// Helper to extract Google Doc embed / preview URL
+const getGoogleDocEmbedUrl = (docUrl?: string): string | null => {
+  if (!docUrl || typeof docUrl !== 'string') return null;
+  const cleanUrl = docUrl.trim();
+
+  const pubMatch = cleanUrl.match(/\/d\/e\/([a-zA-Z0-9-_]+)/);
+  if (pubMatch && pubMatch[1]) {
+    return `https://docs.google.com/document/d/e/${pubMatch[1]}/pub?embedded=true`;
+  }
+
+  const docMatch = cleanUrl.match(/\/d\/([a-zA-Z0-9-_]+)/);
+  if (docMatch && docMatch[1] && docMatch[1] !== 'e') {
+    return `https://docs.google.com/document/d/${docMatch[1]}/preview`;
+  }
+
+  const fileMatch = cleanUrl.match(/\/file\/d\/([a-zA-Z0-9-_]+)/);
+  if (fileMatch && fileMatch[1]) {
+    return `https://drive.google.com/file/d/${fileMatch[1]}/preview`;
+  }
+
+  if (cleanUrl.startsWith('http')) {
+    return cleanUrl;
+  }
+
+  return null;
+};
+
 export const InsightPage: React.FC = () => {
   const [sheetId] = useState<string>(() => {
     return localStorage.getItem('INSIGHT_SHEET_ID') || DEFAULT_SHEET_ID;
@@ -214,6 +241,8 @@ export const InsightPage: React.FC = () => {
     fetchSheetData(sheetId);
   }, [sheetId]);
 
+  const [viewMode, setViewMode] = useState<'markdown' | 'iframe'>('markdown');
+
   // Google Doc Content 로드
   const fetchGDocContent = async (postId: string, docUrl: string) => {
     if (gdocMarkdownMap[postId]) return;
@@ -234,9 +263,6 @@ export const InsightPage: React.FC = () => {
         if (data.success && data.markdown) {
           setGdocMarkdownMap(prev => ({ ...prev, [postId]: data.markdown }));
           return;
-        } else if (data.error) {
-          setGdocErrorMap(prev => ({ ...prev, [postId]: data.error }));
-          return;
         }
       }
 
@@ -252,21 +278,18 @@ export const InsightPage: React.FC = () => {
         if (netlifyData.success && netlifyData.markdown) {
           setGdocMarkdownMap(prev => ({ ...prev, [postId]: netlifyData.markdown }));
           return;
-        } else if (netlifyData.error) {
-          setGdocErrorMap(prev => ({ ...prev, [postId]: netlifyData.error }));
-          return;
         }
       }
 
       setGdocErrorMap(prev => ({
         ...prev,
-        [postId]: '구글 문서를 불러올 수 없습니다. 구글 문서 공유 설정을 "링크가 있는 모든 사용자에게 공개"로 해주시기 바랍니다.'
+        [postId]: 'USE_IFRAME'
       }));
     } catch (err) {
       console.warn('Error fetching Google Doc content:', err);
       setGdocErrorMap(prev => ({
         ...prev,
-        [postId]: '구글 문서를 불러오는 중 문제가 발생했습니다. 구글 문서의 공유 권한이 "링크가 있는 모든 사용자에게 공개" 상태인지 확인해주세요.'
+        [postId]: 'USE_IFRAME'
       }));
     } finally {
       setIsLoadingContent(false);
@@ -275,6 +298,7 @@ export const InsightPage: React.FC = () => {
 
   const handleOpenPost = (id: string) => {
     setSelectedPostId(id);
+    setViewMode('markdown');
     const target = posts.find(p => p.id === id);
     if (target?.docUrl && (target.docUrl.includes('docs.google.com') || target.docUrl.startsWith('http')) && !gdocMarkdownMap[id]) {
       fetchGDocContent(id, target.docUrl);
@@ -389,72 +413,112 @@ export const InsightPage: React.FC = () => {
                   </div>
                 )}
 
-                {/* Google Doc Dynamic Markdown Content */}
-                {selectedPost.docUrl && gdocMarkdownMap[selectedPost.id] ? (
-                  <div className="prose max-w-none text-slate-900 space-y-4 leading-relaxed">
-                    <Markdown
-                      remarkPlugins={[remarkGfm]}
-                      rehypePlugins={[rehypeRaw]}
-                      components={{
-                        table: ({ node, ...props }) => (
-                          <div className="overflow-x-auto my-6 rounded-lg border border-slate-200 bg-white shadow-sm">
-                            <table className="w-full text-left text-sm text-slate-800 border-collapse" {...props} />
-                          </div>
-                        ),
-                        thead: ({ node, ...props }) => <thead className="bg-slate-100 text-slate-900 font-semibold text-xs uppercase border-b border-slate-200" {...props} />,
-                        th: ({ node, ...props }) => <th className="px-4 py-3 font-semibold text-[#FF5A00] border-r border-slate-200 last:border-r-0" {...props} />,
-                        td: ({ node, ...props }) => <td className="px-4 py-3 border-b border-slate-200 border-r border-slate-200 last:border-r-0 text-slate-800" {...props} />,
-                        tr: ({ node, ...props }) => <tr className="hover:bg-slate-50 transition-colors" {...props} />,
-                        strong: ({ node, ...props }) => <strong className="font-bold text-slate-900" {...props} />,
-                        b: ({ node, ...props }) => <strong className="font-bold text-slate-900" {...props} />,
-                        em: ({ node, ...props }) => <em className="italic text-slate-800" {...props} />,
-                        i: ({ node, ...props }) => <em className="italic text-slate-800" {...props} />,
-                        u: ({ node, ...props }) => <u className="underline text-slate-900 decoration-[#FF5A00]/80 decoration-2 underline-offset-2" {...props} />,
-                        del: ({ node, ...props }) => <del className="line-through text-slate-400" {...props} />,
-                        p: ({ node, ...props }) => <p className="mb-3 leading-relaxed text-slate-800" {...props} />,
-                        span: ({ node, ...props }) => <span {...props} />,
-                        blockquote: ({ node, ...props }) => (
-                          <blockquote className="border-l-4 border-[#FF5A00] pl-4 py-2 my-4 bg-[#FF5A00]/5 rounded-r-lg italic text-slate-700 font-medium" {...props} />
-                        ),
-                        img: ({ node, ...props }) => (
-                          <img className="rounded-xl border border-slate-200 shadow-md my-4 max-h-[450px] w-auto mx-auto object-contain" {...props} />
-                        ),
-                        a: ({ node, ...props }) => (
-                          <a className="text-[#FF5A00] underline hover:text-[#D44800] transition-colors font-medium" target="_blank" rel="noopener noreferrer" {...props} />
-                        ),
-                        h1: ({ node, ...props }) => <h1 className="text-xl md:text-2xl font-bold text-slate-900 mt-6 mb-3 border-b border-slate-200 pb-2" {...props} />,
-                        h2: ({ node, ...props }) => <h2 className="text-lg md:text-xl font-bold text-slate-900 mt-5 mb-2" {...props} />,
-                        h3: ({ node, ...props }) => <h3 className="text-base md:text-lg font-semibold text-slate-900 mt-4 mb-2" {...props} />,
-                        ul: ({ node, ...props }) => <ul className="list-disc list-inside space-y-1 my-3 text-slate-800" {...props} />,
-                        ol: ({ node, ...props }) => <ol className="list-decimal list-inside space-y-1 my-3 text-slate-800" {...props} />,
-                      }}
-                    >
-                      {gdocMarkdownMap[selectedPost.id]}
-                    </Markdown>
+                {/* Google Doc Dynamic Markdown or Embedded Iframe Content */}
+                {selectedPost.docUrl && gdocMarkdownMap[selectedPost.id] && viewMode === 'markdown' ? (
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between bg-slate-50 px-4 py-2.5 rounded-xl border border-slate-200/90 text-xs text-slate-600">
+                      <span className="font-semibold text-slate-700">📄 구글 문서 연동 본문</span>
+                      <div className="flex items-center gap-3">
+                        <button
+                          type="button"
+                          onClick={() => setViewMode('iframe')}
+                          className="font-semibold text-slate-600 hover:text-slate-900 transition-colors cursor-pointer"
+                        >
+                          👁️ 원본 문서 미리보기
+                        </button>
+                        {selectedPost.docUrl && (
+                          <a
+                            href={selectedPost.docUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center gap-1 font-bold text-[#FF5A00] hover:underline"
+                          >
+                            새 탭에서 원본 열기 <ChevronRight className="w-3.5 h-3.5" />
+                          </a>
+                        )}
+                      </div>
+                    </div>
+                    <div className="prose max-w-none text-slate-900 space-y-4 leading-relaxed">
+                      <Markdown
+                        remarkPlugins={[remarkGfm]}
+                        rehypePlugins={[rehypeRaw]}
+                        components={{
+                          table: ({ node, ...props }) => (
+                            <div className="overflow-x-auto my-6 rounded-lg border border-slate-200 bg-white shadow-sm">
+                              <table className="w-full text-left text-sm text-slate-800 border-collapse" {...props} />
+                            </div>
+                          ),
+                          thead: ({ node, ...props }) => <thead className="bg-slate-100 text-slate-900 font-semibold text-xs uppercase border-b border-slate-200" {...props} />,
+                          th: ({ node, ...props }) => <th className="px-4 py-3 font-semibold text-[#FF5A00] border-r border-slate-200 last:border-r-0" {...props} />,
+                          td: ({ node, ...props }) => <td className="px-4 py-3 border-b border-slate-200 border-r border-slate-200 last:border-r-0 text-slate-800" {...props} />,
+                          tr: ({ node, ...props }) => <tr className="hover:bg-slate-50 transition-colors" {...props} />,
+                          strong: ({ node, ...props }) => <strong className="font-bold text-slate-900" {...props} />,
+                          b: ({ node, ...props }) => <strong className="font-bold text-slate-900" {...props} />,
+                          em: ({ node, ...props }) => <em className="italic text-slate-800" {...props} />,
+                          i: ({ node, ...props }) => <em className="italic text-slate-800" {...props} />,
+                          u: ({ node, ...props }) => <u className="underline text-slate-900 decoration-[#FF5A00]/80 decoration-2 underline-offset-2" {...props} />,
+                          del: ({ node, ...props }) => <del className="line-through text-slate-400" {...props} />,
+                          p: ({ node, ...props }) => <p className="mb-3 leading-relaxed text-slate-800" {...props} />,
+                          span: ({ node, ...props }) => <span {...props} />,
+                          blockquote: ({ node, ...props }) => (
+                            <blockquote className="border-l-4 border-[#FF5A00] pl-4 py-2 my-4 bg-[#FF5A00]/5 rounded-r-lg italic text-slate-700 font-medium" {...props} />
+                          ),
+                          img: ({ node, ...props }) => (
+                            <img className="rounded-xl border border-slate-200 shadow-md my-4 max-h-[450px] w-auto mx-auto object-contain" {...props} />
+                          ),
+                          a: ({ node, ...props }) => (
+                            <a className="text-[#FF5A00] underline hover:text-[#D44800] transition-colors font-medium" target="_blank" rel="noopener noreferrer" {...props} />
+                          ),
+                          h1: ({ node, ...props }) => <h1 className="text-xl md:text-2xl font-bold text-slate-900 mt-6 mb-3 border-b border-slate-200 pb-2" {...props} />,
+                          h2: ({ node, ...props }) => <h2 className="text-lg md:text-xl font-bold text-slate-900 mt-5 mb-2" {...props} />,
+                          h3: ({ node, ...props }) => <h3 className="text-base md:text-lg font-semibold text-slate-900 mt-4 mb-2" {...props} />,
+                          ul: ({ node, ...props }) => <ul className="list-disc list-inside space-y-1 my-3 text-slate-800" {...props} />,
+                          ol: ({ node, ...props }) => <ol className="list-decimal list-inside space-y-1 my-3 text-slate-800" {...props} />,
+                        }}
+                      >
+                        {gdocMarkdownMap[selectedPost.id]}
+                      </Markdown>
+                    </div>
                   </div>
                 ) : isLoadingContent ? (
                   <div className="text-center py-12 text-slate-500">
                     <RefreshCw className="w-6 h-6 animate-spin mx-auto mb-2 text-[#FF5A00]" />
                     <p className="text-xs">상세 콘텐츠를 불러오는 중입니다...</p>
                   </div>
-                ) : gdocErrorMap[selectedPost.id] ? (
-                  <div className="p-5 rounded-xl bg-amber-50 border border-amber-200 text-amber-900 text-sm my-4 shadow-sm">
-                    <p className="font-bold mb-1.5 text-base text-amber-950 flex items-center gap-2">
-                      ⚠️ 구글 문서 연동 안내
-                    </p>
-                    <p className="leading-relaxed text-xs md:text-sm text-amber-800 mb-3">
-                      {gdocErrorMap[selectedPost.id]}
-                    </p>
-                    {selectedPost.docUrl && (
-                      <a
-                        href={selectedPost.docUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#FF5A00] hover:underline"
-                      >
-                        구글 문서 원본 직접 열기 <ChevronRight className="w-3.5 h-3.5" />
-                      </a>
-                    )}
+                ) : selectedPost.docUrl ? (
+                  <div className="space-y-3 my-2">
+                    <div className="flex items-center justify-between bg-slate-50 px-4 py-2.5 rounded-xl border border-slate-200 text-xs text-slate-600">
+                      <div className="flex items-center gap-2">
+                        {gdocMarkdownMap[selectedPost.id] && (
+                          <button
+                            type="button"
+                            onClick={() => setViewMode('markdown')}
+                            className="px-2.5 py-1 rounded-lg bg-slate-200 text-slate-800 font-semibold hover:bg-slate-300 transition-colors cursor-pointer"
+                          >
+                            ← 본문 뷰어로 보기
+                          </button>
+                        )}
+                        <span className="font-semibold text-slate-700">📄 구글 문서 원본 미리보기</span>
+                      </div>
+                      {selectedPost.docUrl && (
+                        <a
+                          href={selectedPost.docUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-1 font-bold text-[#FF5A00] hover:underline"
+                        >
+                          새 탭에서 원본 열기 <ChevronRight className="w-3.5 h-3.5" />
+                        </a>
+                      )}
+                    </div>
+                    <div className="w-full h-[650px] md:h-[820px] rounded-xl overflow-hidden border border-slate-200 bg-white shadow-sm">
+                      <iframe
+                        src={getGoogleDocEmbedUrl(selectedPost.docUrl) || selectedPost.docUrl}
+                        title={selectedPost.title}
+                        className="w-full h-full border-0"
+                        allow="autoplay"
+                      />
+                    </div>
                   </div>
                 ) : (
                   <div className="space-y-4">
