@@ -25,7 +25,16 @@ function getGoogleDocFetchTargets(docUrl: string): string[] {
     urls.push(`https://docs.google.com/document/d/${docId}/export?format=txt`);
   }
 
-  // 3. Direct URL if cleanUrl is already a full http link not matched above
+  // 3. Drive file link: /file/d/1234567890abcdef or /open?id=1234567890abcdef
+  const fileMatch = cleanUrl.match(/\/file\/d\/([a-zA-Z0-9-_]+)/) || cleanUrl.match(/[?&]id=([a-zA-Z0-9-_]+)/);
+  if (fileMatch && fileMatch[1]) {
+    const fileId = fileMatch[1];
+    urls.push(`https://docs.google.com/document/d/${fileId}/export?format=html`);
+    urls.push(`https://docs.google.com/document/d/${fileId}/mobilebasic`);
+    urls.push(`https://docs.google.com/document/d/${fileId}/pub`);
+  }
+
+  // 4. Direct URL if cleanUrl is already a full http link not matched above
   if (urls.length === 0 && cleanUrl.startsWith('http')) {
     urls.push(cleanUrl);
   }
