@@ -38,6 +38,7 @@ export const InsightPage: React.FC = () => {
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [isLoadingContent, setIsLoadingContent] = useState<boolean>(false);
   const [gdocMarkdownMap, setGdocMarkdownMap] = useState<Record<string, string>>({});
+  const [gdocErrorMap, setGdocErrorMap] = useState<Record<string, string>>({});
   const [lastUpdated, setLastUpdated] = useState<string | null>(null);
 
   // 구글 시트 데이터 연동
@@ -218,6 +219,8 @@ export const InsightPage: React.FC = () => {
     if (gdocMarkdownMap[postId]) return;
 
     setIsLoadingContent(true);
+    setGdocErrorMap(prev => ({ ...prev, [postId]: '' }));
+
     try {
       const res = await fetch('/api/gdoc/content', {
         method: 'POST',
@@ -227,9 +230,15 @@ export const InsightPage: React.FC = () => {
       const data = await res.json();
       if (data.success && data.markdown) {
         setGdocMarkdownMap(prev => ({ ...prev, [postId]: data.markdown }));
+      } else if (data.error) {
+        setGdocErrorMap(prev => ({ ...prev, [postId]: data.error }));
       }
     } catch (err) {
       console.warn('Error fetching Google Doc content:', err);
+      setGdocErrorMap(prev => ({
+        ...prev,
+        [postId]: '구글 문서를 불러오는 중 문제가 발생했습니다. 구글 문서의 공유 권한이 "링크가 있는 모든 사용자에게 공개" 상태인지 확인해주세요.'
+      }));
     } finally {
       setIsLoadingContent(false);
     }
@@ -398,6 +407,25 @@ export const InsightPage: React.FC = () => {
                   <div className="text-center py-12 text-slate-500">
                     <RefreshCw className="w-6 h-6 animate-spin mx-auto mb-2 text-[#FF5A00]" />
                     <p className="text-xs">상세 콘텐츠를 불러오는 중입니다...</p>
+                  </div>
+                ) : gdocErrorMap[selectedPost.id] ? (
+                  <div className="p-5 rounded-xl bg-amber-50 border border-amber-200 text-amber-900 text-sm my-4 shadow-sm">
+                    <p className="font-bold mb-1.5 text-base text-amber-950 flex items-center gap-2">
+                      ⚠️ 구글 문서 연동 안내
+                    </p>
+                    <p className="leading-relaxed text-xs md:text-sm text-amber-800 mb-3">
+                      {gdocErrorMap[selectedPost.id]}
+                    </p>
+                    {selectedPost.docUrl && (
+                      <a
+                        href={selectedPost.docUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#FF5A00] hover:underline"
+                      >
+                        구글 문서 원본 직접 열기 <ChevronRight className="w-3.5 h-3.5" />
+                      </a>
+                    )}
                   </div>
                 ) : (
                   <div className="space-y-4">
