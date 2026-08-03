@@ -13,4 +13,3 @@ app.post('/gdoc/content', handleGdocContent);
 app.post('*', handleGdocContent);
 
 export const handler = serverless(app);
-
